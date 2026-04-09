@@ -1,0 +1,25 @@
+## Ignore Visual Studio temporary files
+.vs/
+bin/
+obj/
+
+## User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Build results
+Debug/
+Release/
+
+## ASP.NET local database files
+*.mdf
+*.ldf
+
+## Logs
+*.log
+
+## Rider / VS Code optional
+.idea/
+.vscode/
