@@ -1,0 +1,50 @@
+﻿@model BlindMatchPAS.ViewModels.AdminUserEditViewModel
+
+@{
+    ViewData["Title"] = "Edit User";
+}
+
+<h2>Edit User</h2>
+
+<form asp-action="EditUser" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="mb-3">
+        <label asp-for="FullName" class="form-label"></label>
+        <input asp-for="FullName" class="form-control" />
+        <span asp-validation-for="FullName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="UserName" class="form-label"></label>
+        <input asp-for="UserName" class="form-control" />
+        <span asp-validation-for="UserName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="RoleType" class="form-label"></label>
+        <input asp-for="RoleType" class="form-control" />
+        <span asp-validation-for="RoleType" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="SelectedRole" class="form-label"></label>
+        <select asp-for="SelectedRole" asp-items="ViewBag.Roles" class="form-select">
+            <option value="">-- Select Role --</option>
+        </select>
+        <span asp-validation-for="SelectedRole" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success">Save Changes</button>
+    <a asp-action="Users" class="btn btn-secondary">Back</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

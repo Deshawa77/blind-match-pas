@@ -21,6 +21,11 @@ namespace BlindMatchPAS.Controllers
             _userManager = userManager;
         }
 
+        private List<string> GetAvailableRoles()
+        {
+            return new List<string> { "Student", "Supervisor", "ModuleLeader", "Admin" };
+        }
+
         // =========================
         // Research Area Management
         // =========================
@@ -148,6 +153,162 @@ namespace BlindMatchPAS.Controllers
                 .ToListAsync();
 
             return View(users);
+        }
+
+        [HttpGet]
+        public IActionResult CreateUser()
+        {
+            ViewBag.Roles = new SelectList(GetAvailableRoles());
+            return View(new AdminCreateUserViewModel());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateUser(AdminCreateUserViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Roles = new SelectList(GetAvailableRoles(), model.SelectedRole);
+                return View(model);
+            }
+
+            var existingUser = await _userManager.FindByEmailAsync(model.Email);
+            if (existingUser != null)
+            {
+                ModelState.AddModelError("", "A user with this email already exists.");
+                ViewBag.Roles = new SelectList(GetAvailableRoles(), model.SelectedRole);
+                return View(model);
+            }
+
+            var user = new ApplicationUser
+            {
+                FullName = model.FullName,
+                Email = model.Email,
+                UserName = model.UserName,
+                RoleType = model.RoleType,
+                EmailConfirmed = true
+            };
+
+            var result = await _userManager.CreateAsync(user, model.Password);
+
+            if (!result.Succeeded)
+            {
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+
+                ViewBag.Roles = new SelectList(GetAvailableRoles(), model.SelectedRole);
+                return View(model);
+            }
+
+            await _userManager.AddToRoleAsync(user, model.SelectedRole);
+
+            TempData["SuccessMessage"] = "User created successfully.";
+            return RedirectToAction(nameof(Users));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditUser(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return BadRequest();
+            }
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var currentRole = roles.FirstOrDefault() ?? "";
+
+            var model = new AdminUserEditViewModel
+            {
+                Id = user.Id,
+                FullName = user.FullName,
+                Email = user.Email ?? string.Empty,
+                UserName = user.UserName ?? string.Empty,
+                RoleType = user.RoleType,
+                SelectedRole = currentRole
+            };
+
+            ViewBag.Roles = new SelectList(GetAvailableRoles(), model.SelectedRole);
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditUser(AdminUserEditViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Roles = new SelectList(GetAvailableRoles(), model.SelectedRole);
+                return View(model);
+            }
+
+            var user = await _userManager.FindByIdAsync(model.Id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            user.FullName = model.FullName;
+            user.Email = model.Email;
+            user.UserName = model.UserName;
+            user.RoleType = model.RoleType;
+
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                foreach (var error in updateResult.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+
+                ViewBag.Roles = new SelectList(GetAvailableRoles(), model.SelectedRole);
+                return View(model);
+            }
+
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            if (currentRoles.Any())
+            {
+                await _userManager.RemoveFromRolesAsync(user, currentRoles);
+            }
+
+            await _userManager.AddToRoleAsync(user, model.SelectedRole);
+
+            TempData["SuccessMessage"] = "User updated successfully.";
+            return RedirectToAction(nameof(Users));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteUser(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return BadRequest();
+            }
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var result = await _userManager.DeleteAsync(user);
+
+            if (!result.Succeeded)
+            {
+                TempData["ErrorMessage"] = "Failed to delete user.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            TempData["SuccessMessage"] = "User deleted successfully.";
+            return RedirectToAction(nameof(Users));
         }
 
         // =========================
