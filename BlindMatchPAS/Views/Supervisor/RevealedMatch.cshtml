@@ -1,0 +1,36 @@
+﻿@model BlindMatchPAS.Models.MatchRecord
+
+@{
+    ViewData["Title"] = "Revealed Match";
+}
+
+<h2>Match Confirmed</h2>
+
+<div class="alert alert-success">
+    Identity has been revealed successfully.
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h4>Project Details</h4>
+        <p><strong>Title:</strong> @Model.ProjectProposal?.Title</p>
+        <p><strong>Research Area:</strong> @Model.ProjectProposal?.ResearchArea?.Name</p>
+        <p><strong>Matched At:</strong> @Model.MatchedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</p>
+
+        <hr />
+
+        <h4>Student Details</h4>
+        <p><strong>Full Name:</strong> @Model.Student?.FullName</p>
+        <p><strong>Email:</strong> @Model.Student?.Email</p>
+
+        <hr />
+
+        <h4>Supervisor Details</h4>
+        <p><strong>Full Name:</strong> @Model.Supervisor?.FullName</p>
+        <p><strong>Email:</strong> @Model.Supervisor?.Email</p>
+    </div>
+</div>
+
+<p class="mt-3">
+    <a asp-action="MyInterests" class="btn btn-secondary">Back to My Interests</a>
+</p>

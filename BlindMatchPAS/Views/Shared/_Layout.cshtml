@@ -25,31 +25,25 @@
 
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
 
-                    <!-- LEFT SIDE NAV -->
                     <ul class="navbar-nav flex-grow-1">
-
-                        <!-- HOME -->
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">
                                 Home
                             </a>
                         </li>
 
-                        <!-- PRIVACY -->
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Home" asp-action="Privacy">
                                 Privacy
                             </a>
                         </li>
 
-                        <!-- STUDENT -->
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Student" asp-action="MyProposals">
                                 My Proposals
                             </a>
                         </li>
 
-                        <!-- SUPERVISOR -->
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Supervisor" asp-action="BrowseProjects">
                                 Browse Projects
@@ -62,24 +56,25 @@
                             </a>
                         </li>
 
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Supervisor" asp-action="MyInterests">
+                                My Interests
+                            </a>
+                        </li>
                     </ul>
 
-                    <!-- RIGHT SIDE LOGIN -->
                     <partial name="_LoginPartial" />
-
                 </div>
             </div>
         </nav>
     </header>
 
-    <!-- MAIN CONTENT -->
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <!-- FOOTER -->
     <footer class="border-top footer text-muted">
         <div class="container">
             &copy; 2026 - BlindMatchPAS -
@@ -87,7 +82,6 @@
         </div>
     </footer>
 
-    <!-- SCRIPTS -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

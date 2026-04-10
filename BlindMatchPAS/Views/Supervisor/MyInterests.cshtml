@@ -1,0 +1,57 @@
+﻿@model IEnumerable<BlindMatchPAS.Models.SupervisorInterest>
+
+@{
+    ViewData["Title"] = "My Interests";
+}
+
+<h2>My Expressed Interests</h2>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Project Title</th>
+            <th>Research Area</th>
+            <th>Status</th>
+            <th>Expressed At</th>
+            <th>Confirmed</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var interest in Model)
+        {
+            <tr>
+                <td>@interest.ProjectProposal?.Title</td>
+                <td>@interest.ProjectProposal?.ResearchArea?.Name</td>
+                <td>@interest.ProjectProposal?.Status</td>
+                <td>@interest.ExpressedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                <td>@(interest.IsConfirmed ? "Yes" : "No")</td>
+                <td>
+                    @if (!(interest.ProjectProposal?.IsMatched ?? false) && interest.ProjectProposal?.Status != "Withdrawn")
+                    {
+                        <form asp-action="ConfirmMatch" asp-route-id="@interest.Id" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-primary"
+                                    onclick="return confirm('Confirm this match and reveal identities?');">
+                                Confirm Match
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <span class="text-muted">No action available</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -21,7 +21,6 @@ namespace BlindMatchPAS.Controllers
             _userManager = userManager;
         }
 
-        // Set supervisor expertise
         [HttpGet]
         public async Task<IActionResult> SetExpertise()
         {
@@ -81,7 +80,6 @@ namespace BlindMatchPAS.Controllers
             return RedirectToAction(nameof(BrowseProjects));
         }
 
-        // Browse anonymous proposals
         [HttpGet]
         public async Task<IActionResult> BrowseProjects(int? researchAreaId)
         {
@@ -123,7 +121,6 @@ namespace BlindMatchPAS.Controllers
             return View(proposals);
         }
 
-        // Express interest in a project
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ExpressInterest(int id)
@@ -176,6 +173,120 @@ namespace BlindMatchPAS.Controllers
 
             TempData["SuccessMessage"] = "Interest expressed successfully.";
             return RedirectToAction(nameof(BrowseProjects));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> MyInterests()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Challenge();
+            }
+
+            var interests = await _context.SupervisorInterests
+                .Include(si => si.ProjectProposal)
+                    .ThenInclude(p => p.ResearchArea)
+                .Where(si => si.SupervisorId == user.Id)
+                .OrderByDescending(si => si.ExpressedAt)
+                .ToListAsync();
+
+            return View(interests);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ConfirmMatch(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Challenge();
+            }
+
+            var interest = await _context.SupervisorInterests
+                .Include(si => si.ProjectProposal)
+                .FirstOrDefaultAsync(si => si.Id == id && si.SupervisorId == user.Id);
+
+            if (interest == null)
+            {
+                return NotFound();
+            }
+
+            var proposal = interest.ProjectProposal;
+
+            if (proposal == null)
+            {
+                return NotFound();
+            }
+
+            if (proposal.Status == "Matched" || proposal.IsMatched)
+            {
+                TempData["ErrorMessage"] = "This project has already been matched.";
+                return RedirectToAction(nameof(MyInterests));
+            }
+
+            if (proposal.Status == "Withdrawn")
+            {
+                TempData["ErrorMessage"] = "This project has been withdrawn.";
+                return RedirectToAction(nameof(MyInterests));
+            }
+
+            var existingMatch = await _context.MatchRecords
+                .AnyAsync(m => m.ProjectProposalId == proposal.Id);
+
+            if (existingMatch)
+            {
+                TempData["ErrorMessage"] = "A match record already exists for this project.";
+                return RedirectToAction(nameof(MyInterests));
+            }
+
+            interest.IsConfirmed = true;
+
+            proposal.Status = "Matched";
+            proposal.IsMatched = true;
+            proposal.IsIdentityRevealed = true;
+            proposal.UpdatedAt = DateTime.UtcNow;
+
+            var matchRecord = new MatchRecord
+            {
+                ProjectProposalId = proposal.Id,
+                StudentId = proposal.StudentId,
+                SupervisorId = user.Id,
+                MatchedAt = DateTime.UtcNow,
+                IdentityRevealed = true
+            };
+
+            _context.MatchRecords.Add(matchRecord);
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Match confirmed successfully. Identity has been revealed.";
+            return RedirectToAction(nameof(RevealedMatch), new { proposalId = proposal.Id });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> RevealedMatch(int proposalId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Challenge();
+            }
+
+            var match = await _context.MatchRecords
+                .Include(m => m.ProjectProposal)
+                    .ThenInclude(p => p.ResearchArea)
+                .Include(m => m.Student)
+                .Include(m => m.Supervisor)
+                .FirstOrDefaultAsync(m => m.ProjectProposalId == proposalId && m.SupervisorId == user.Id);
+
+            if (match == null)
+            {
+                return NotFound();
+            }
+
+            return View(match);
         }
     }
 }
