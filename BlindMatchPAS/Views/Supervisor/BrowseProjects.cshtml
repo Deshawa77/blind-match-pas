@@ -1,0 +1,62 @@
+﻿@model IEnumerable<BlindMatchPAS.Models.ProjectProposal>
+
+@{
+    ViewData["Title"] = "Browse Projects";
+}
+
+<h2>Browse Anonymous Project Proposals</h2>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<form method="get" asp-action="BrowseProjects" class="row g-3 mb-3">
+    <div class="col-md-6">
+        <label class="form-label">Filter by Research Area</label>
+        <select name="researchAreaId" asp-items="ViewBag.ResearchAreas" class="form-select">
+            <option value="">-- All Research Areas --</option>
+        </select>
+    </div>
+    <div class="col-md-6 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary me-2">Filter</button>
+        <a asp-action="SetExpertise" class="btn btn-secondary">Set Expertise</a>
+    </div>
+</form>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Abstract</th>
+            <th>Technical Stack</th>
+            <th>Research Area</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var proposal in Model)
+        {
+            <tr>
+                <td>@proposal.Title</td>
+                <td>@proposal.Abstract</td>
+                <td>@proposal.TechnicalStack</td>
+                <td>@proposal.ResearchArea?.Name</td>
+                <td>@proposal.Status</td>
+                <td>@proposal.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                <td>
+                    <form asp-action="ExpressInterest" asp-route-id="@proposal.Id" method="post">
+                        <button type="submit" class="btn btn-sm btn-success">Express Interest</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

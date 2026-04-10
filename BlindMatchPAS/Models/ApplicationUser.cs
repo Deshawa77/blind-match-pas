@@ -11,5 +11,6 @@ namespace BlindMatchPAS.Models
         public ICollection<SupervisorInterest> SupervisorInterests { get; set; } = new List<SupervisorInterest>();
         public ICollection<MatchRecord> StudentMatches { get; set; } = new List<MatchRecord>();
         public ICollection<MatchRecord> SupervisorMatches { get; set; } = new List<MatchRecord>();
+        public ICollection<SupervisorExpertise> SupervisorExpertiseAreas { get; set; } = new List<SupervisorExpertise>();
     }
 }

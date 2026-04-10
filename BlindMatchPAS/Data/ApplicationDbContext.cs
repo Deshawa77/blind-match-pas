@@ -15,6 +15,7 @@ namespace BlindMatchPAS.Data
         public DbSet<ProjectProposal> ProjectProposals { get; set; }
         public DbSet<SupervisorInterest> SupervisorInterests { get; set; }
         public DbSet<MatchRecord> MatchRecords { get; set; }
+        public DbSet<SupervisorExpertise> SupervisorExpertise { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -42,6 +43,12 @@ namespace BlindMatchPAS.Data
                 .HasOne(m => m.Supervisor)
                 .WithMany(u => u.SupervisorMatches)
                 .HasForeignKey(m => m.SupervisorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<SupervisorExpertise>()
+                .HasOne(se => se.Supervisor)
+                .WithMany(u => u.SupervisorExpertiseAreas)
+                .HasForeignKey(se => se.SupervisorId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }
