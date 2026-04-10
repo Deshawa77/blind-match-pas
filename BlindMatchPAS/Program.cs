@@ -53,7 +53,9 @@ app.MapRazorPages();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+
     await RoleSeeder.SeedRoles(services);
+    await ResearchAreaSeeder.SeedResearchAreas(services);
 }
 
 app.Run();

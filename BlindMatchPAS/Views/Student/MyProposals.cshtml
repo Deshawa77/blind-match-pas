@@ -1,0 +1,65 @@
+﻿@model IEnumerable<BlindMatchPAS.Models.ProjectProposal>
+
+@{
+    ViewData["Title"] = "My Proposals";
+}
+
+<h2>My Project Proposals</h2>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Submit New Proposal</a>
+</p>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Research Area</th>
+            <th>Status</th>
+            <th>Matched</th>
+            <th>Identity Revealed</th>
+            <th>Created</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var proposal in Model)
+        {
+            <tr>
+                <td>@proposal.Title</td>
+                <td>@proposal.ResearchArea?.Name</td>
+                <td>@proposal.Status</td>
+                <td>@(proposal.IsMatched ? "Yes" : "No")</td>
+                <td>@(proposal.IsIdentityRevealed ? "Yes" : "No")</td>
+                <td>@proposal.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                <td>
+                    @if (!proposal.IsMatched && proposal.Status != "Withdrawn")
+                    {
+                        <a asp-action="Edit" asp-route-id="@proposal.Id" class="btn btn-sm btn-warning">Edit</a>
+
+                        <form asp-action="Withdraw" asp-route-id="@proposal.Id" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-danger"
+                                    onclick="return confirm('Are you sure you want to withdraw this proposal?');">
+                                Withdraw
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <span class="text-muted">No actions available</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

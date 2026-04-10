@@ -1,0 +1,42 @@
+﻿@model BlindMatchPAS.ViewModels.ProjectProposalViewModel
+
+@{
+    ViewData["Title"] = "Submit Proposal";
+}
+
+<h2>Submit Project Proposal</h2>
+
+<form asp-action="Create" method="post">
+    <div class="mb-3">
+        <label asp-for="Title" class="form-label"></label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Abstract" class="form-label"></label>
+        <textarea asp-for="Abstract" class="form-control" rows="6"></textarea>
+        <span asp-validation-for="Abstract" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="TechnicalStack" class="form-label"></label>
+        <input asp-for="TechnicalStack" class="form-control" />
+        <span asp-validation-for="TechnicalStack" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ResearchAreaId" class="form-label"></label>
+        <select asp-for="ResearchAreaId" asp-items="ViewBag.ResearchAreas" class="form-select">
+            <option value="">-- Select Research Area --</option>
+        </select>
+        <span asp-validation-for="ResearchAreaId" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit Proposal</button>
+    <a asp-action="MyProposals" class="btn btn-secondary">Back</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
