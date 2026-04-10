@@ -1,0 +1,29 @@
+﻿@model IEnumerable<BlindMatchPAS.Models.ApplicationUser>
+
+@{
+    ViewData["Title"] = "Users";
+}
+
+<h2>Manage Users</h2>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Username</th>
+            <th>Role Type</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.FullName</td>
+                <td>@user.Email</td>
+                <td>@user.UserName</td>
+                <td>@user.RoleType</td>
+            </tr>
+        }
+    </tbody>
+</table>

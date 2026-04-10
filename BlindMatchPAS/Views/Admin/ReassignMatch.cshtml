@@ -1,0 +1,28 @@
+﻿@model BlindMatchPAS.ViewModels.ReassignMatchViewModel
+
+@{
+    ViewData["Title"] = "Reassign Match";
+}
+
+<h2>Reassign Match</h2>
+
+<form asp-action="ReassignMatch" method="post">
+    <input type="hidden" asp-for="MatchId" />
+    <input type="hidden" asp-for="ProjectProposalId" />
+    <input type="hidden" asp-for="CurrentSupervisorId" />
+
+    <div class="mb-3">
+        <label asp-for="NewSupervisorId" class="form-label"></label>
+        <select asp-for="NewSupervisorId" asp-items="ViewBag.Supervisors" class="form-select">
+            <option value="">-- Select Supervisor --</option>
+        </select>
+        <span asp-validation-for="NewSupervisorId" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Reassignment</button>
+    <a asp-action="Allocations" class="btn btn-secondary">Back</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

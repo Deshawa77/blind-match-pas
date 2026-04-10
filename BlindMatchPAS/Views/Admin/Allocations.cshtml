@@ -1,0 +1,40 @@
+﻿@model IEnumerable<BlindMatchPAS.Models.MatchRecord>
+
+@{
+    ViewData["Title"] = "Allocations";
+}
+
+<h2>All Allocations</h2>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Project</th>
+            <th>Research Area</th>
+            <th>Student</th>
+            <th>Supervisor</th>
+            <th>Matched At</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var match in Model)
+        {
+            <tr>
+                <td>@match.ProjectProposal?.Title</td>
+                <td>@match.ProjectProposal?.ResearchArea?.Name</td>
+                <td>@match.Student?.FullName (@match.Student?.Email)</td>
+                <td>@match.Supervisor?.FullName (@match.Supervisor?.Email)</td>
+                <td>@match.MatchedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                <td>
+                    <a asp-action="ReassignMatch" asp-route-id="@match.Id" class="btn btn-sm btn-warning">Reassign</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
