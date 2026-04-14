@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <Include>[BlindMatchPAS]*</Include>
+          <Exclude>[BlindMatchPAS]AspNetCoreGeneratedDocument.*,[BlindMatchPAS]BlindMatchPAS.Data.ResearchAreaSeeder*,[BlindMatchPAS]BlindMatchPAS.Services.DatabaseSchemaRecovery*</Exclude>
+          <ExcludeByFile>**/Data/Migrations/*.cs,**/obj/**/*.cs,**/Models/*.cs,**/ViewModels/*.cs,**/Constants/*.cs,**/Options/*.cs,**/Program.cs</ExcludeByFile>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

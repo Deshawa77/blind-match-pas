@@ -5,6 +5,8 @@ VisualStudioVersion = 17.13.35806.99 d17.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlindMatchPAS", "BlindMatchPAS\BlindMatchPAS.csproj", "{AE34B205-53BA-4E04-B1AE-40BC097F37F8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlindMatchPAS.Tests", "BlindMatchPAS.Tests\BlindMatchPAS.Tests.csproj", "{2C58D95A-7B3B-4AE0-9493-21A2CC3A3B9A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{AE34B205-53BA-4E04-B1AE-40BC097F37F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AE34B205-53BA-4E04-B1AE-40BC097F37F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AE34B205-53BA-4E04-B1AE-40BC097F37F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C58D95A-7B3B-4AE0-9493-21A2CC3A3B9A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C58D95A-7B3B-4AE0-9493-21A2CC3A3B9A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C58D95A-7B3B-4AE0-9493-21A2CC3A3B9A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C58D95A-7B3B-4AE0-9493-21A2CC3A3B9A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
