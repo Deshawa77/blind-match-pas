@@ -4,33 +4,67 @@
     ViewData["Title"] = "Revealed Match";
 }
 
-<h2>Match Confirmed</h2>
-
-<div class="alert alert-success">
-    Identity has been revealed successfully.
-</div>
-
-<div class="card">
-    <div class="card-body">
-        <h4>Project Details</h4>
-        <p><strong>Title:</strong> @Model.ProjectProposal?.Title</p>
-        <p><strong>Research Area:</strong> @Model.ProjectProposal?.ResearchArea?.Name</p>
-        <p><strong>Matched At:</strong> @Model.MatchedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</p>
-
-        <hr />
-
-        <h4>Student Details</h4>
-        <p><strong>Full Name:</strong> @Model.Student?.FullName</p>
-        <p><strong>Email:</strong> @Model.Student?.Email</p>
-
-        <hr />
-
-        <h4>Supervisor Details</h4>
-        <p><strong>Full Name:</strong> @Model.Supervisor?.FullName</p>
-        <p><strong>Email:</strong> @Model.Supervisor?.Email</p>
+<section class="page-panel">
+    <div class="section-header">
+        <div>
+            <div class="section-eyebrow">Identity Reveal</div>
+            <h1 class="h2 mt-2">Match Confirmed</h1>
+            <p class="subtle-text mt-2">The blind phase is complete. You can now begin formal collaboration with the matched student.</p>
+        </div>
+        <partial name="_StatusBadge" model='@("Matched")' />
     </div>
-</div>
 
-<p class="mt-3">
-    <a asp-action="MyInterests" class="btn btn-secondary">Back to My Interests</a>
-</p>
+    <div class="dashboard-grid">
+        <div class="metric-card metric-card-accent">
+            <div class="metric-label">Project</div>
+            <div class="metric-value fs-3">@Model.ProjectProposal?.Title</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Research Area</div>
+            <div class="metric-value fs-4">@Model.ProjectProposal?.ResearchArea?.Name</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Matched At</div>
+            <div class="metric-value fs-4">@Model.MatchedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</div>
+        </div>
+    </div>
+
+    <div class="row g-4 mt-1">
+        <div class="col-lg-6">
+            <div class="surface-card h-100">
+                <h2 class="h4 mb-3">Student Details</h2>
+                @if (Model.ProjectProposal?.ProjectGroup != null)
+                {
+                    <div class="fw-semibold mb-2">@Model.ProjectProposal.ProjectGroup.Name</div>
+                    <div class="subtle-text mb-3">Lead contact: @Model.Student?.FullName (@Model.Student?.Email)</div>
+
+                    <ul class="list-clean">
+                        @foreach (var member in Model.ProjectProposal.ProjectGroup.Members.OrderByDescending(member => member.IsLead).ThenBy(member => member.Student?.FullName))
+                        {
+                            <li>
+                                <strong>@member.Student?.FullName</strong>
+                                <div class="subtle-text">@member.Student?.Email</div>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div><strong>@Model.Student?.FullName</strong></div>
+                    <div>@Model.Student?.Email</div>
+                }
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="surface-card h-100">
+                <h2 class="h4 mb-3">Supervisor Details</h2>
+                <div><strong>@Model.Supervisor?.FullName</strong></div>
+                <div>@Model.Supervisor?.Email</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a asp-action="MyInterests" class="btn btn-outline-primary">Back to My Interests</a>
+    </div>
+</section>

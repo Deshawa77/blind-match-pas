@@ -4,24 +4,36 @@
     ViewData["Title"] = "Reassign Match";
 }
 
-<h2>Reassign Match</h2>
-
-<form asp-action="ReassignMatch" method="post">
-    <input type="hidden" asp-for="MatchId" />
-    <input type="hidden" asp-for="ProjectProposalId" />
-    <input type="hidden" asp-for="CurrentSupervisorId" />
-
-    <div class="mb-3">
-        <label asp-for="NewSupervisorId" class="form-label"></label>
-        <select asp-for="NewSupervisorId" asp-items="ViewBag.Supervisors" class="form-select">
-            <option value="">-- Select Supervisor --</option>
-        </select>
-        <span asp-validation-for="NewSupervisorId" class="text-danger"></span>
+<section class="page-panel">
+    <div class="section-header">
+        <div>
+            <div class="section-eyebrow">Manual Intervention</div>
+            <h1 class="h2 mt-2">Reassign Match</h1>
+            <p class="subtle-text mt-2">Reassignment is limited to supervisor accounts and is validated against expertise alignment and capacity limits.</p>
+        </div>
     </div>
 
-    <button type="submit" class="btn btn-primary">Save Reassignment</button>
-    <a asp-action="Allocations" class="btn btn-secondary">Back</a>
-</form>
+    <form asp-action="ReassignMatch" method="post" class="surface-card">
+        <input type="hidden" asp-for="MatchId" />
+        <input type="hidden" asp-for="ProjectProposalId" />
+        <input type="hidden" asp-for="CurrentSupervisorId" />
+
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="mb-3">
+            <label asp-for="NewSupervisorId" class="form-label"></label>
+            <select asp-for="NewSupervisorId" asp-items="ViewBag.Supervisors" class="form-select">
+                <option value="">-- Select Supervisor --</option>
+            </select>
+            <span asp-validation-for="NewSupervisorId" class="text-danger"></span>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mt-4">
+            <button type="submit" class="btn btn-primary">Save Reassignment</button>
+            <a asp-action="Allocations" class="btn btn-outline-secondary">Back</a>
+        </div>
+    </form>
+</section>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

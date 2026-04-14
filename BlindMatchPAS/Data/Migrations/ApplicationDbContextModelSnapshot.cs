@@ -43,7 +43,8 @@ namespace BlindMatchPAS.Data.Migrations
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -70,10 +71,14 @@ namespace BlindMatchPAS.Data.Migrations
 
                     b.Property<string>("RoleType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("SupervisorCapacity")
+                        .HasColumnType("int");
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
@@ -93,6 +98,59 @@ namespace BlindMatchPAS.Data.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("BlindMatchPAS.Models.AuditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("ActorDisplayName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ActorUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("EntityId")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<bool>("IsSecurityEvent")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MetadataJson")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<DateTime>("OccurredAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OccurredAtUtc");
+
+                    b.ToTable("AuditLogs");
                 });
 
             modelBuilder.Entity("BlindMatchPAS.Models.MatchRecord", b =>
@@ -122,13 +180,136 @@ namespace BlindMatchPAS.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProjectProposalId");
+                    b.HasIndex("ProjectProposalId")
+                        .IsUnique();
 
                     b.HasIndex("StudentId");
 
                     b.HasIndex("SupervisorId");
 
                     b.ToTable("MatchRecords");
+                });
+
+            modelBuilder.Entity("BlindMatchPAS.Models.NotificationEmail", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeliveryStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("FailureReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("HtmlBody")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NotificationType")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<string>("RelatedEntityId")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("RelatedEntityType")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<DateTime?>("SentAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ToEmail")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAtUtc");
+
+                    b.ToTable("NotificationEmails");
+                });
+
+            modelBuilder.Entity("BlindMatchPAS.Models.ProjectGroup", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LeadStudentId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LeadStudentId")
+                        .IsUnique();
+
+                    b.ToTable("ProjectGroups");
+                });
+
+            modelBuilder.Entity("BlindMatchPAS.Models.ProjectGroupMember", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsLead")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("JoinedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ProjectGroupId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StudentId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectGroupId", "StudentId")
+                        .IsUnique();
+
+                    b.HasIndex("StudentId")
+                        .IsUnique();
+
+                    b.ToTable("ProjectGroupMembers");
                 });
 
             modelBuilder.Entity("BlindMatchPAS.Models.ProjectProposal", b =>
@@ -152,6 +333,9 @@ namespace BlindMatchPAS.Data.Migrations
 
                     b.Property<bool>("IsMatched")
                         .HasColumnType("bit");
+
+                    b.Property<int?>("ProjectGroupId")
+                        .HasColumnType("int");
 
                     b.Property<int>("ResearchAreaId")
                         .HasColumnType("int");
@@ -180,6 +364,8 @@ namespace BlindMatchPAS.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ProjectGroupId");
+
                     b.HasIndex("ResearchAreaId");
 
                     b.HasIndex("StudentId");
@@ -206,6 +392,9 @@ namespace BlindMatchPAS.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Name")
+                        .IsUnique();
+
                     b.ToTable("ResearchAreas");
                 });
 
@@ -228,7 +417,8 @@ namespace BlindMatchPAS.Data.Migrations
 
                     b.HasIndex("ResearchAreaId");
 
-                    b.HasIndex("SupervisorId");
+                    b.HasIndex("SupervisorId", "ResearchAreaId")
+                        .IsUnique();
 
                     b.ToTable("SupervisorExpertise");
                 });
@@ -258,9 +448,54 @@ namespace BlindMatchPAS.Data.Migrations
 
                     b.HasIndex("ProjectProposalId");
 
-                    b.HasIndex("SupervisorId");
+                    b.HasIndex("SupervisorId", "ProjectProposalId")
+                        .IsUnique();
 
                     b.ToTable("SupervisorInterests");
+                });
+
+            modelBuilder.Entity("BlindMatchPAS.Models.SystemSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("AllowOptionalTwoFactor")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("AllowSelfRegistration")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("DefaultSupervisorCapacity")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("EmailNotificationsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("MatchingClosesAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("MatchingOpensAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ProposalSubmissionClosesAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ProposalSubmissionOpensAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("RequireConfirmedAccountToSignIn")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedByUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SystemSettings");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -427,8 +662,43 @@ namespace BlindMatchPAS.Data.Migrations
                     b.Navigation("Supervisor");
                 });
 
+            modelBuilder.Entity("BlindMatchPAS.Models.ProjectGroup", b =>
+                {
+                    b.HasOne("BlindMatchPAS.Models.ApplicationUser", "LeadStudent")
+                        .WithMany("LedProjectGroups")
+                        .HasForeignKey("LeadStudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("LeadStudent");
+                });
+
+            modelBuilder.Entity("BlindMatchPAS.Models.ProjectGroupMember", b =>
+                {
+                    b.HasOne("BlindMatchPAS.Models.ProjectGroup", "ProjectGroup")
+                        .WithMany("Members")
+                        .HasForeignKey("ProjectGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BlindMatchPAS.Models.ApplicationUser", "Student")
+                        .WithMany("ProjectGroupMemberships")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ProjectGroup");
+
+                    b.Navigation("Student");
+                });
+
             modelBuilder.Entity("BlindMatchPAS.Models.ProjectProposal", b =>
                 {
+                    b.HasOne("BlindMatchPAS.Models.ProjectGroup", "ProjectGroup")
+                        .WithMany("ProjectProposals")
+                        .HasForeignKey("ProjectGroupId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("BlindMatchPAS.Models.ResearchArea", "ResearchArea")
                         .WithMany("ProjectProposals")
                         .HasForeignKey("ResearchAreaId")
@@ -440,6 +710,8 @@ namespace BlindMatchPAS.Data.Migrations
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("ProjectGroup");
 
                     b.Navigation("ResearchArea");
 
@@ -537,6 +809,10 @@ namespace BlindMatchPAS.Data.Migrations
 
             modelBuilder.Entity("BlindMatchPAS.Models.ApplicationUser", b =>
                 {
+                    b.Navigation("LedProjectGroups");
+
+                    b.Navigation("ProjectGroupMemberships");
+
                     b.Navigation("StudentMatches");
 
                     b.Navigation("StudentProjectProposals");
@@ -548,9 +824,18 @@ namespace BlindMatchPAS.Data.Migrations
                     b.Navigation("SupervisorMatches");
                 });
 
+            modelBuilder.Entity("BlindMatchPAS.Models.ProjectGroup", b =>
+                {
+                    b.Navigation("Members");
+
+                    b.Navigation("ProjectProposals");
+                });
+
             modelBuilder.Entity("BlindMatchPAS.Models.ProjectProposal", b =>
                 {
                     b.Navigation("MatchRecords");
+
+                    b.Navigation("ProjectGroup");
 
                     b.Navigation("SupervisorInterests");
                 });

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+using BlindMatchPAS.Constants;
+using System.ComponentModel.DataAnnotations;
 
 namespace BlindMatchPAS.ViewModels
 {
@@ -24,5 +25,17 @@ namespace BlindMatchPAS.ViewModels
         [Required]
         [Display(Name = "Research Area")]
         public int ResearchAreaId { get; set; }
+
+        [Required]
+        [Display(Name = "Submission Type")]
+        [RegularExpression("^(Individual|Group)$", ErrorMessage = "Submission type must be Individual or Group.")]
+        public string OwnershipType { get; set; } = ProposalOwnershipTypes.Individual;
+
+        [Display(Name = "Project Group")]
+        public int? ProjectGroupId { get; set; }
+
+        public bool CanSubmitAsGroup { get; set; }
+
+        public string? SelectedGroupName { get; set; }
     }
 }

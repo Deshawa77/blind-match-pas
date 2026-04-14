@@ -7,7 +7,8 @@ namespace BlindMatchPAS.Models
         public int Id { get; set; }
 
         [Required]
-        [StringLength(100)]
+        [StringLength(100, MinimumLength = 3)]
+        [RegularExpression(@"^[a-zA-Z0-9\s\-\&]+$", ErrorMessage = "Research area name contains invalid characters.")]
         public string Name { get; set; } = string.Empty;
 
         [StringLength(250)]

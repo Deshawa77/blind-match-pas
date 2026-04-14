@@ -1,0 +1,165 @@
+@model BlindMatchPAS.ViewModels.ProjectGroupWorkspaceViewModel
+
+@{
+    ViewData["Title"] = "My Project Group";
+}
+
+<section class="page-panel mb-4">
+    <div class="section-header">
+        <div>
+            <div class="section-eyebrow">Group Lead Workflow</div>
+            <h1 class="h2 mt-2">My Project Group</h1>
+            <p class="subtle-text mt-2">Create or manage a project group of up to @Model.MaxMembers students. Group-owned proposals can only be submitted and managed by the group lead.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-action="Create" class="btn btn-primary">Submit Proposal</a>
+            <a asp-action="MyProposals" class="btn btn-outline-primary">View Proposals</a>
+        </div>
+    </div>
+</section>
+
+<section class="row g-4">
+    <div class="col-lg-5">
+        <div class="surface-card h-100">
+            <div class="section-header">
+                <div>
+                    <h2 class="h4">Group Status</h2>
+                    <p class="subtle-text">Your membership and lead permissions determine who can manage group proposals.</p>
+                </div>
+            </div>
+
+            @if (!Model.HasGroup)
+            {
+                <div class="metric-value fs-4">No Group Yet</div>
+                <div class="subtle-text mt-2">Create a group if you are acting as the lead for a shared final-year project proposal.</div>
+            }
+            else
+            {
+                <div class="metric-value fs-4">@Model.GroupName</div>
+                <div class="subtle-text mt-2">Lead: @Model.LeadName</div>
+                <div class="subtle-text">Members: @Model.MemberCount / @Model.MaxMembers</div>
+                <div class="subtle-text">Your role: @(Model.IsLead ? "Group Lead" : "Group Member")</div>
+
+                @if (Model.GroupLockedByProposalActivity)
+                {
+                    <div class="alert alert-info mt-3 mb-0">
+                        Membership changes are locked because this group already has proposal workflow history.
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="surface-card h-100">
+            <div class="section-header">
+                <div>
+                    <h2 class="h4">Membership Roster</h2>
+                    <p class="subtle-text">Every student can belong to only one project group at a time.</p>
+                </div>
+            </div>
+
+            @if (!Model.HasGroup)
+            {
+                var emptyState = new BlindMatchPAS.ViewModels.EmptyStateViewModel
+                {
+                    Title = "No members added yet",
+                    Description = "Use the form below to create a group and select the students who should appear under the same proposal owner.",
+                };
+                <partial name="_EmptyState" model="emptyState" />
+            }
+            else
+            {
+                <div class="table-shell">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var member in Model.Members)
+                            {
+                                <tr>
+                                    <td>@member.FullName</td>
+                                    <td>@member.Email</td>
+                                    <td>
+                                        @if (member.IsLead)
+                                        {
+                                            <span class="status-badge status-review">Lead</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="status-badge status-neutral">Member</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@if (!Model.HasGroup || (Model.IsLead && !Model.GroupLockedByProposalActivity))
+{
+    <section class="surface-card mt-4">
+        <div class="section-header">
+            <div>
+                <h2 class="h4">@(Model.HasGroup ? "Update Group" : "Create Group")</h2>
+                <p class="subtle-text">Select up to @(Model.MaxMembers - 1) additional students besides the lead.</p>
+            </div>
+        </div>
+
+        <form asp-action="@(Model.HasGroup ? "UpdateGroup" : "CreateGroup")" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <input type="hidden" asp-for="Editor.ProjectGroupId" />
+
+            <div class="mb-3">
+                <label asp-for="Editor.GroupName" class="form-label"></label>
+                <input asp-for="Editor.GroupName" class="form-control" />
+                <span asp-validation-for="Editor.GroupName" class="text-danger"></span>
+            </div>
+
+            <div class="surface-card bg-light-subtle">
+                <div class="form-text text-uppercase mb-2">Selectable Students</div>
+                @if (!Model.AvailableStudents.Any())
+                {
+                    <div class="subtle-text">No unassigned student accounts are currently available.</div>
+                }
+                else
+                {
+                    <div class="row g-3">
+                        @for (var i = 0; i < Model.AvailableStudents.Count; i++)
+                        {
+                            <div class="col-md-6">
+                                <label class="surface-card d-block h-100">
+                                    <input type="checkbox"
+                                           name="Editor.SelectedMemberIds"
+                                           value="@Model.AvailableStudents[i].StudentId"
+                                           @(Model.AvailableStudents[i].Selected ? "checked" : "") />
+                                    <span class="fw-semibold d-block mt-2">@Model.AvailableStudents[i].FullName</span>
+                                    <span class="subtle-text">@Model.AvailableStudents[i].Email</span>
+                                </label>
+                            </div>
+                        }
+                    </div>
+                }
+                <span asp-validation-for="Editor.SelectedMemberIds" class="text-danger d-block mt-3"></span>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mt-4">
+                <button type="submit" class="btn btn-primary">@(Model.HasGroup ? "Save Group Changes" : "Create Project Group")</button>
+                <a asp-action="Dashboard" class="btn btn-outline-secondary">Back to Dashboard</a>
+            </div>
+        </form>
+    </section>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

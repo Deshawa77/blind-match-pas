@@ -1,0 +1,19 @@
+@page
+@model BlindMatchPAS.Areas.Identity.Pages.Account.RegisterConfirmationModel
+@{
+    ViewData["Title"] = "Check Your Email";
+}
+
+<div class="row justify-content-center py-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <h1 class="h3 mb-3">@ViewData["Title"]</h1>
+                <p class="text-muted">
+                    We created your account for <strong>@Model.Email</strong> and sent a confirmation link. Open that email to activate secure sign-in.
+                </p>
+                <a asp-page="./Login" class="btn btn-primary">Return to Login</a>
+            </div>
+        </div>
+    </div>
+</div>

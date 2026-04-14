@@ -1,4 +1,16 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("[data-toast]").forEach((toast, index) => {
+    window.setTimeout(() => {
+      toast.classList.add("is-visible");
+    }, 120 * index);
 
-// Write your JavaScript code.
+    window.setTimeout(() => {
+      toast.classList.remove("is-visible");
+      toast.classList.add("is-leaving");
+    }, 4200 + 120 * index);
+
+    window.setTimeout(() => {
+      toast.remove();
+    }, 5000 + 120 * index);
+  });
+});

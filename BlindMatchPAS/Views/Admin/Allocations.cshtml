@@ -4,37 +4,60 @@
     ViewData["Title"] = "Allocations";
 }
 
-<h2>All Allocations</h2>
+<section class="page-panel mb-4">
+    <div class="section-header">
+        <div>
+            <div class="section-eyebrow">Allocation Oversight</div>
+            <h1 class="h2 mt-2">All Allocations</h1>
+            <p class="subtle-text mt-2">Review every confirmed blind match, verify the reveal trail, and intervene manually when reassignment is necessary.</p>
+        </div>
+    </div>
+</section>
 
-@if (TempData["SuccessMessage"] != null)
+@if (!Model.Any())
 {
-    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    var emptyState = new BlindMatchPAS.ViewModels.EmptyStateViewModel
+    {
+        Title = "No confirmed allocations",
+        Description = "Confirmed matches will appear here once supervisors finalize identity reveal."
+    };
+    <partial name="_EmptyState" model="emptyState" />
 }
-
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>Project</th>
-            <th>Research Area</th>
-            <th>Student</th>
-            <th>Supervisor</th>
-            <th>Matched At</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var match in Model)
-        {
-            <tr>
-                <td>@match.ProjectProposal?.Title</td>
-                <td>@match.ProjectProposal?.ResearchArea?.Name</td>
-                <td>@match.Student?.FullName (@match.Student?.Email)</td>
-                <td>@match.Supervisor?.FullName (@match.Supervisor?.Email)</td>
-                <td>@match.MatchedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
-                <td>
-                    <a asp-action="ReassignMatch" asp-route-id="@match.Id" class="btn btn-sm btn-warning">Reassign</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+else
+{
+    <div class="table-shell">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Project</th>
+                    <th>Research Area</th>
+                    <th>Student</th>
+                    <th>Supervisor</th>
+                    <th>Matched At</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var match in Model)
+                {
+                    <tr>
+                        <td class="fw-semibold">@match.ProjectProposal?.Title</td>
+                        <td>@match.ProjectProposal?.ResearchArea?.Name</td>
+                        <td>
+                            <div>@match.Student?.FullName</div>
+                            <div class="subtle-text">@match.Student?.Email</div>
+                        </td>
+                        <td>
+                            <div>@match.Supervisor?.FullName</div>
+                            <div class="subtle-text">@match.Supervisor?.Email</div>
+                        </td>
+                        <td>@match.MatchedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>
+                            <a asp-action="ReassignMatch" asp-route-id="@match.Id" class="btn btn-outline-primary btn-sm">Reassign</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+@using BlindMatchPAS.Constants
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -9,70 +10,81 @@
     <link rel="stylesheet" href="~/BlindMatchPAS.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+    <header class="site-header">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom box-shadow mb-4">
+            <div class="container">
+                <a class="navbar-brand fw-semibold" asp-area="" asp-controller="Home" asp-action="Index">
                     BlindMatchPAS
                 </a>
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
-                        aria-controls="navbarSupportedContent"
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                        aria-controls="mainNav"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-
-                    <ul class="navbar-nav flex-grow-1">
+                <div id="mainNav" class="navbar-collapse collapse">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">
-                                Home
-                            </a>
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Privacy">
-                                Privacy
-                            </a>
-                        </li>
+                        @if (User.Identity?.IsAuthenticated ?? false)
+                        {
+                            @if (User.IsInRole(ApplicationRoles.Student))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Student" asp-action="Dashboard">Dashboard</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Student" asp-action="MyProposals">My Proposals</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Student" asp-action="MyGroup">My Group</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Student" asp-action="Create">Submit Proposal</a>
+                                </li>
+                            }
 
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Student" asp-action="MyProposals">
-                                My Proposals
-                            </a>
-                        </li>
+                            @if (User.IsInRole(ApplicationRoles.Supervisor))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Supervisor" asp-action="Dashboard">Dashboard</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Supervisor" asp-action="BrowseProjects">Blind Review</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Supervisor" asp-action="SetExpertise">Set Expertise</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Supervisor" asp-action="MyInterests">My Interests</a>
+                                </li>
+                            }
 
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Supervisor" asp-action="BrowseProjects">
-                                Browse Projects
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Supervisor" asp-action="SetExpertise">
-                                Set Expertise
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Supervisor" asp-action="MyInterests">
-                                My Interests
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Admin" asp-action="ResearchAreas">Manage Research Areas</a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Admin" asp-action="Users">Manage Users</a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Admin" asp-action="Allocations">All Allocations</a>
-                        </li>
+                            @if (User.IsInRole(ApplicationRoles.ModuleLeader) || User.IsInRole(ApplicationRoles.Admin))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Admin" asp-action="Dashboard">Dashboard</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Admin" asp-action="Settings">Settings</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Admin" asp-action="ResearchAreas">Research Areas</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Admin" asp-action="Users">Users</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Admin" asp-action="Allocations">Allocations</a>
+                                </li>
+                            }
+                        }
                     </ul>
 
                     <partial name="_LoginPartial" />
@@ -82,7 +94,8 @@
     </header>
 
     <div class="container">
-        <main role="main" class="pb-3">
+        <partial name="_ToastMessages" />
+        <main role="main" class="pb-4">
             @RenderBody()
         </main>
     </div>

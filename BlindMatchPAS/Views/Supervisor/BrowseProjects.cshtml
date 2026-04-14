@@ -1,62 +1,105 @@
-﻿@model IEnumerable<BlindMatchPAS.Models.ProjectProposal>
+@model BlindMatchPAS.ViewModels.SupervisorBrowseProjectsViewModel
 
 @{
     ViewData["Title"] = "Browse Projects";
 }
 
-<h2>Browse Anonymous Project Proposals</h2>
-
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
-}
-
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
-}
-
-<form method="get" asp-action="BrowseProjects" class="row g-3 mb-3">
-    <div class="col-md-6">
-        <label class="form-label">Filter by Research Area</label>
-        <select name="researchAreaId" asp-items="ViewBag.ResearchAreas" class="form-select">
-            <option value="">-- All Research Areas --</option>
-        </select>
+<section class="page-panel mb-4">
+    <div class="section-header">
+        <div>
+            <div class="section-eyebrow">Blind Review Queue</div>
+            <h1 class="h2 mt-2">Anonymous Project Pool</h1>
+            <p class="subtle-text mt-2">Students remain anonymous until a confirmed match. Review technical merit, search by keywords, and protect your remaining capacity.</p>
+        </div>
     </div>
-    <div class="col-md-6 d-flex align-items-end">
-        <button type="submit" class="btn btn-primary me-2">Filter</button>
-        <a asp-action="SetExpertise" class="btn btn-secondary">Set Expertise</a>
-    </div>
-</form>
 
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>Title</th>
-            <th>Abstract</th>
-            <th>Technical Stack</th>
-            <th>Research Area</th>
-            <th>Status</th>
-            <th>Created</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var proposal in Model)
-        {
-            <tr>
-                <td>@proposal.Title</td>
-                <td>@proposal.Abstract</td>
-                <td>@proposal.TechnicalStack</td>
-                <td>@proposal.ResearchArea?.Name</td>
-                <td>@proposal.Status</td>
-                <td>@proposal.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
-                <td>
-                    <form asp-action="ExpressInterest" asp-route-id="@proposal.Id" method="post">
-                        <button type="submit" class="btn btn-sm btn-success">Express Interest</button>
-                    </form>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+    <div class="info-chip-row mb-4">
+        <span class="info-chip">Matching Window: @(Model.IsMatchingWindowOpen ? "Open" : "Closed")</span>
+        <span class="info-chip">Capacity Used: @Model.ConfirmedMatchCount / @Model.CapacityLimit</span>
+        <span class="info-chip">Remaining Slots: @Model.RemainingCapacity</span>
+        <span class="info-chip">Hidden During Blind Review: student names, emails, and group ownership</span>
+    </div>
+
+    @if (!Model.HasConfiguredExpertise)
+    {
+        <div class="alert alert-info">You have not selected any preferred research areas yet. Set your expertise to receive a more focused blind-review queue.</div>
+    }
+
+    <div class="surface-card">
+        <form method="get" asp-action="BrowseProjects" class="app-form-grid">
+            <div>
+                <label class="form-label">Filter by Research Area</label>
+                <select name="researchAreaId" asp-items="ViewBag.ResearchAreas" class="form-select">
+                    <option value="">-- All Research Areas --</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Search Projects</label>
+                <input name="searchTerm" value="@Model.SearchTerm" class="form-control" placeholder="Title, abstract, or tech stack" />
+            </div>
+            <div class="d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-primary">Apply Filters</button>
+                <a asp-action="BrowseProjects" class="btn btn-outline-secondary">Reset</a>
+                <a asp-action="SetExpertise" class="btn btn-outline-primary">Set Expertise</a>
+            </div>
+        </form>
+    </div>
+</section>
+
+@if (!Model.Projects.Any())
+{
+    var emptyState = new BlindMatchPAS.ViewModels.EmptyStateViewModel
+    {
+        Title = "No anonymous proposals match the current filters",
+        Description = "Try widening the research area filter, removing the keyword search, or adjusting your expertise profile.",
+        ActionLabel = "Reset Filters",
+        ActionUrl = Url.Action("BrowseProjects", "Supervisor")
+    };
+    <partial name="_EmptyState" model="emptyState" />
+}
+else
+{
+    <div class="table-shell">
+        <div class="table-summary">Showing @Model.Projects.Count anonymous proposal(s) that fit the current blind-review criteria.</div>
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Abstract</th>
+                    <th>Technical Stack</th>
+                    <th>Research Area</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var proposal in Model.Projects)
+                {
+                    <tr>
+                        <td>
+                            <div class="fw-semibold">@proposal.Title</div>
+                        </td>
+                        <td class="subtle-text">@proposal.Abstract</td>
+                        <td>@proposal.TechnicalStack</td>
+                        <td>@proposal.ResearchAreaName</td>
+                        <td><partial name="_StatusBadge" model="proposal.Status" /></td>
+                        <td>@proposal.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>
+                            @if (proposal.AlreadyInterested)
+                            {
+                                <span class="status-badge status-neutral">Interest Recorded</span>
+                            }
+                            else
+                            {
+                                <form asp-action="ExpressInterest" asp-route-id="@proposal.Id" method="post">
+                                    <button type="submit" class="btn btn-primary btn-sm">Express Interest</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

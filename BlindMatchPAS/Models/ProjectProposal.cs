@@ -8,7 +8,8 @@ namespace BlindMatchPAS.Models
         public int Id { get; set; }
 
         [Required]
-        [StringLength(150)]
+        [StringLength(150, MinimumLength = 5)]
+        [RegularExpression(@"^[a-zA-Z0-9\s\-\:\,\.\(\)]+$", ErrorMessage = "Title contains invalid characters.")]
         public string Title { get; set; } = string.Empty;
 
         [Required]
@@ -16,7 +17,8 @@ namespace BlindMatchPAS.Models
         public string Abstract { get; set; } = string.Empty;
 
         [Required]
-        [StringLength(500)]
+        [StringLength(500, MinimumLength = 2)]
+        [Display(Name = "Technical Stack")]
         public string TechnicalStack { get; set; } = string.Empty;
 
         [Required]
@@ -31,8 +33,15 @@ namespace BlindMatchPAS.Models
         [ForeignKey("StudentId")]
         public ApplicationUser? Student { get; set; }
 
+        public int? ProjectGroupId { get; set; }
+
+        [ForeignKey(nameof(ProjectGroupId))]
+        public ProjectGroup? ProjectGroup { get; set; }
+
         [Required]
         [StringLength(30)]
+        [RegularExpression("^(Pending|UnderReview|Matched|Withdrawn)$",
+            ErrorMessage = "Status must be Pending, UnderReview, Matched, or Withdrawn.")]
         public string Status { get; set; } = "Pending";
 
         public bool IsMatched { get; set; } = false;

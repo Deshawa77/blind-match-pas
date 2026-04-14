@@ -4,47 +4,58 @@
     ViewData["Title"] = "Research Areas";
 }
 
-<h2>Manage Research Areas</h2>
+<section class="page-panel mb-4">
+    <div class="section-header">
+        <div>
+            <div class="section-eyebrow">Academic Taxonomy</div>
+            <h1 class="h2 mt-2">Manage Research Areas</h1>
+            <p class="subtle-text mt-2">Keep the proposal categories clean, aligned, and reusable across student submissions and supervisor expertise tags.</p>
+        </div>
+        <a asp-action="CreateResearchArea" class="btn btn-primary">Add Research Area</a>
+    </div>
+</section>
 
-@if (TempData["SuccessMessage"] != null)
+@if (!Model.Any())
 {
-    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    var emptyState = new BlindMatchPAS.ViewModels.EmptyStateViewModel
+    {
+        Title = "No research areas yet",
+        Description = "Add the first research area to start categorising proposals and supervisor expertise.",
+        ActionLabel = "Add Research Area",
+        ActionUrl = Url.Action("CreateResearchArea", "Admin")
+    };
+    <partial name="_EmptyState" model="emptyState" />
 }
-
-@if (TempData["ErrorMessage"] != null)
+else
 {
-    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    <div class="table-shell">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var area in Model)
+                {
+                    <tr>
+                        <td class="fw-semibold">@area.Name</td>
+                        <td>@area.Description</td>
+                        <td>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a asp-action="EditResearchArea" asp-route-id="@area.Id" class="btn btn-outline-primary btn-sm">Edit</a>
+                                <form asp-action="DeleteResearchArea" asp-route-id="@area.Id" method="post">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Delete this research area?');">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }
-
-<p>
-    <a asp-action="CreateResearchArea" class="btn btn-primary">Add Research Area</a>
-</p>
-
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var area in Model)
-        {
-            <tr>
-                <td>@area.Name</td>
-                <td>@area.Description</td>
-                <td>
-                    <a asp-action="EditResearchArea" asp-route-id="@area.Id" class="btn btn-sm btn-warning">Edit</a>
-
-                    <form asp-action="DeleteResearchArea" asp-route-id="@area.Id" method="post" style="display:inline;">
-                        <button type="submit" class="btn btn-sm btn-danger"
-                                onclick="return confirm('Delete this research area?');">
-                            Delete
-                        </button>
-                    </form>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>

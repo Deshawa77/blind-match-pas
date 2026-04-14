@@ -1,0 +1,181 @@
+@model BlindMatchPAS.ViewModels.AdminDashboardViewModel
+
+@{
+    ViewData["Title"] = "Coordinator Dashboard";
+}
+
+<section class="page-panel mb-4">
+    <div class="section-header">
+        <div>
+            <div class="section-eyebrow">Allocation Oversight</div>
+            <h1 class="h2 mt-2">Coordinator Dashboard</h1>
+            <p class="subtle-text mt-2">Monitor platform readiness, proposal flow, recent allocations, and security activity from a single control surface.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-action="Settings" class="btn btn-primary">Open Settings</a>
+            <a asp-action="Allocations" class="btn btn-outline-primary">View Allocations</a>
+        </div>
+    </div>
+
+    <div class="info-chip-row mb-4">
+        <span class="info-chip">Submission Window: @(Model.IsSubmissionWindowOpen ? "Open" : "Closed")</span>
+        <span class="info-chip">Matching Window: @(Model.IsMatchingWindowOpen ? "Open" : "Closed")</span>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="metric-card metric-card-accent">
+            <div class="metric-value">@Model.UserCount</div>
+            <div class="metric-label">Total Users</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">@Model.StudentCount</div>
+            <div class="metric-label">Students</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">@Model.SupervisorCount</div>
+            <div class="metric-label">Supervisors</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">@Model.ProjectGroupCount</div>
+            <div class="metric-label">Project Groups</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">@Model.ProposalCount</div>
+            <div class="metric-label">Proposals</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">@Model.PendingProposalCount</div>
+            <div class="metric-label">Pending</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">@Model.UnderReviewProposalCount</div>
+            <div class="metric-label">Under Review</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">@Model.MatchedProposalCount</div>
+            <div class="metric-label">Matched</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">@Model.ResearchAreaCount</div>
+            <div class="metric-label">Research Areas</div>
+        </div>
+    </div>
+</section>
+
+<section class="row g-4">
+    <div class="col-xl-5">
+        <div class="surface-card h-100">
+            <div class="section-header">
+                <div>
+                    <h2 class="h4">Recent Allocations</h2>
+                    <p class="subtle-text">Latest confirmed pairings with direct access to manual reassignment.</p>
+                </div>
+            </div>
+
+            @if (!Model.RecentAllocations.Any())
+            {
+                var allocationEmptyState = new BlindMatchPAS.ViewModels.EmptyStateViewModel
+                {
+                    Title = "No allocations yet",
+                    Description = "Confirmed blind matches will appear here once supervisors complete the reveal step.",
+                    ActionLabel = "Open Allocations",
+                    ActionUrl = Url.Action("Allocations", "Admin")
+                };
+                <partial name="_EmptyState" model="allocationEmptyState" />
+            }
+            else
+            {
+                <ul class="list-clean">
+                    @foreach (var allocation in Model.RecentAllocations)
+                    {
+                        <li class="surface-card">
+                            <div class="fw-semibold">@allocation.ProjectTitle</div>
+                            <div class="subtle-text">@allocation.ResearchAreaName</div>
+                            <div class="mt-2"><strong>@allocation.StudentName</strong> with <strong>@allocation.SupervisorName</strong></div>
+                            <div class="subtle-text">@allocation.MatchedAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</div>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="surface-card h-100">
+            <div class="section-header">
+                <div>
+                    <h2 class="h4">Audit Trail</h2>
+                    <p class="subtle-text">Traceability for core platform and security events.</p>
+                </div>
+            </div>
+
+            @if (!Model.RecentAuditLogs.Any())
+            {
+                var auditEmptyState = new BlindMatchPAS.ViewModels.EmptyStateViewModel
+                {
+                    Title = "No audit events yet",
+                    Description = "Important workflow and security actions will be recorded here automatically."
+                };
+                <partial name="_EmptyState" model="auditEmptyState" />
+            }
+            else
+            {
+                <ul class="list-clean">
+                    @foreach (var log in Model.RecentAuditLogs)
+                    {
+                        <li>
+                            <div class="d-flex justify-content-between gap-2">
+                                <strong>@log.Action</strong>
+                                @if (log.IsSecurityEvent)
+                                {
+                                    <span class="status-badge status-review">Security</span>
+                                }
+                            </div>
+                            <div class="subtle-text">@log.ActorDisplayName</div>
+                            <div>@log.Description</div>
+                            <div class="subtle-text">@log.OccurredAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</div>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+
+    <div class="col-xl-3">
+        <div class="surface-card h-100">
+            <div class="section-header">
+                <div>
+                    <h2 class="h4">Notification Outbox</h2>
+                    <p class="subtle-text">Recent registration, review, and identity-reveal emails.</p>
+                </div>
+            </div>
+
+            @if (!Model.RecentEmails.Any())
+            {
+                var emailEmptyState = new BlindMatchPAS.ViewModels.EmptyStateViewModel
+                {
+                    Title = "No notification emails yet",
+                    Description = "Generated emails will appear here even when SMTP is not configured."
+                };
+                <partial name="_EmptyState" model="emailEmptyState" />
+            }
+            else
+            {
+                <ul class="list-clean">
+                    @foreach (var email in Model.RecentEmails)
+                    {
+                        <li>
+                            <div class="d-flex justify-content-between gap-2">
+                                <strong>@email.NotificationType</strong>
+                                <partial name="_StatusBadge" model="email.DeliveryStatus" />
+                            </div>
+                            <div>@email.Subject</div>
+                            <div class="subtle-text">@email.ToEmail</div>
+                            <div class="subtle-text">@email.CreatedAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</div>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+</section>

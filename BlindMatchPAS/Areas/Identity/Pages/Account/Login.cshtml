@@ -1,0 +1,52 @@
+@page
+@model BlindMatchPAS.Areas.Identity.Pages.Account.LoginModel
+@{
+    ViewData["Title"] = "Secure Login";
+}
+
+<div class="row justify-content-center py-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <h1 class="h3 mb-3">@ViewData["Title"]</h1>
+                <p class="text-muted">
+                    Sign in with your email address or username. Accounts are protected by password-strength rules and temporary lockout after repeated failed attempts.
+                </p>
+
+                @if (Model.RequireConfirmedAccountToSignIn)
+                {
+                    <div class="alert alert-info">Confirmed email is required before sign-in.</div>
+                }
+
+                <form id="account" method="post">
+                    <input type="hidden" asp-for="ReturnUrl" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Input.Identifier" class="form-label"></label>
+                        <input asp-for="Input.Identifier" class="form-control" autocomplete="username" />
+                        <span asp-validation-for="Input.Identifier" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Input.Password" class="form-label"></label>
+                        <input asp-for="Input.Password" class="form-control" autocomplete="current-password" />
+                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" asp-for="Input.RememberMe" />
+                        <label class="form-check-label" asp-for="Input.RememberMe"></label>
+                    </div>
+
+                    <button id="login-submit" type="submit" class="btn btn-primary">Login</button>
+                    <a asp-page="./ForgotPassword" class="btn btn-link">Forgot password?</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

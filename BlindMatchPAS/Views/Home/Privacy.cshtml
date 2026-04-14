@@ -1,6 +1,36 @@
-﻿@{
-    ViewData["Title"] = "Privacy Policy";
+@{
+    ViewData["Title"] = "Privacy & Security";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<h1 class="mb-3">@ViewData["Title"]</h1>
+
+<p class="lead text-muted">
+    BlindMatchPAS is designed to keep project allocation fair, role-restricted, and traceable throughout the full proposal lifecycle.
+</p>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body">
+                <h2 class="h5">Identity Protection</h2>
+                <p>Supervisors review project title, abstract, technical stack, and research area without seeing the student name or contact information until a match is confirmed.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body">
+                <h2 class="h5">Role-Based Access Control</h2>
+                <p>Students, supervisors, module leaders, and administrators are separated using ASP.NET Core Identity roles so each user sees only the features appropriate to their responsibilities.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body">
+                <h2 class="h5">Operational Controls</h2>
+                <p>Account provisioning is handled by the module leader or administrator, while stronger passwords, account lockout, EF Core migrations, anti-forgery protection, and secure cookie settings strengthen the deployment baseline.</p>
+            </div>
+        </div>
+    </div>
+</div>

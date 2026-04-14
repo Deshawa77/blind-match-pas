@@ -1,0 +1,26 @@
+@page
+@model BlindMatchPAS.Areas.Identity.Pages.Account.RegisterModel
+@{
+    ViewData["Title"] = "Registration Disabled";
+}
+
+<div class="row justify-content-center py-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <h1 class="h3 mb-3">@ViewData["Title"]</h1>
+                <p class="text-muted">
+                    BlindMatchPAS uses coordinator-managed onboarding. Student and supervisor accounts must be created by the module leader or administrator through the user management dashboard.
+                </p>
+                <div class="alert alert-warning">
+                    Self-registration is disabled to keep account provisioning under module leadership control and aligned with the coursework brief.
+                </div>
+                <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl" class="btn btn-primary">Back to Login</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

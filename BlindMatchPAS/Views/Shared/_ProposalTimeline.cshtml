@@ -1,0 +1,41 @@
+@model BlindMatchPAS.ViewModels.ProposalTimelineViewModel
+@{
+    var isUnderReview = Model.Status == BlindMatchPAS.Constants.ProposalStatuses.UnderReview
+        || Model.Status == BlindMatchPAS.Constants.ProposalStatuses.Matched;
+    var isMatched = Model.Status == BlindMatchPAS.Constants.ProposalStatuses.Matched;
+    var isWithdrawn = Model.Status == BlindMatchPAS.Constants.ProposalStatuses.Withdrawn;
+}
+
+<div class="timeline-card">
+    <div class="timeline-step @(isWithdrawn || !string.IsNullOrWhiteSpace(Model.Status) ? "is-complete" : string.Empty)">
+        <span class="timeline-dot"></span>
+        <div>
+            <div class="timeline-title">Submitted</div>
+            <div class="timeline-meta">@Model.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</div>
+        </div>
+    </div>
+    <div class="timeline-step @(isUnderReview ? "is-complete" : string.Empty)">
+        <span class="timeline-dot"></span>
+        <div>
+            <div class="timeline-title">Blind Review</div>
+            <div class="timeline-meta">
+                @(isUnderReview && Model.UpdatedAt.HasValue
+                    ? Model.UpdatedAt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                    : "Awaiting supervisor interest")
+            </div>
+        </div>
+    </div>
+    <div class="timeline-step @(isMatched || isWithdrawn ? "is-complete" : string.Empty)">
+        <span class="timeline-dot"></span>
+        <div>
+            <div class="timeline-title">@(isWithdrawn ? "Withdrawn" : "Identity Reveal")</div>
+            <div class="timeline-meta">
+                @(isMatched && Model.MatchedAt.HasValue
+                    ? Model.MatchedAt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                    : isWithdrawn && Model.UpdatedAt.HasValue
+                        ? Model.UpdatedAt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                        : "Not completed yet")
+            </div>
+        </div>
+    </div>
+</div>

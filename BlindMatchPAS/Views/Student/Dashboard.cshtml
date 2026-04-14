@@ -1,0 +1,164 @@
+@model BlindMatchPAS.ViewModels.StudentDashboardViewModel
+
+@{
+    ViewData["Title"] = "Student Dashboard";
+}
+
+<section class="page-panel mb-4">
+    <div class="section-header">
+        <div>
+            <div class="section-eyebrow">Student Workspace</div>
+            <h1 class="h2 mt-2">Welcome back, @Model.StudentName</h1>
+            <p class="subtle-text mt-2">Track proposal progress, manage your project group when needed, and move straight into the next action that matters.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-action="Create" class="btn btn-primary">Submit Proposal</a>
+            <a asp-action="MyGroup" class="btn btn-outline-primary">Open Group Workspace</a>
+            <a asp-action="MyProposals" class="btn btn-outline-primary">View All Proposals</a>
+        </div>
+    </div>
+
+    <div class="info-chip-row mb-4">
+        <span class="info-chip">
+            Submission Window:
+            @(Model.CanSubmitNow ? "Open" : "Closed")
+        </span>
+        @if (Model.SubmissionOpensAtUtc.HasValue)
+        {
+            <span class="info-chip">Opens @Model.SubmissionOpensAtUtc.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span>
+        }
+        @if (Model.SubmissionClosesAtUtc.HasValue)
+        {
+            <span class="info-chip">Closes @Model.SubmissionClosesAtUtc.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span>
+        }
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="metric-card metric-card-accent">
+            <div class="metric-value">@Model.ProposalCount</div>
+            <div class="metric-label">Total Proposals</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">@Model.PendingCount</div>
+            <div class="metric-label">Pending</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">@Model.UnderReviewCount</div>
+            <div class="metric-label">Under Review</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">@Model.MatchedCount</div>
+            <div class="metric-label">Matched</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">@Model.WithdrawnCount</div>
+            <div class="metric-label">Withdrawn</div>
+        </div>
+    </div>
+</section>
+
+<section class="row g-4 mb-4">
+    <div class="col-lg-4">
+        <div class="surface-card h-100">
+            <div class="section-header">
+                <div>
+                    <h2 class="h4">Project Group</h2>
+                    <p class="subtle-text">Use the group lead workflow when the proposal belongs to a collaborative team.</p>
+                </div>
+            </div>
+
+            @if (!Model.HasProjectGroup)
+            {
+                var groupEmptyState = new BlindMatchPAS.ViewModels.EmptyStateViewModel
+                {
+                    Title = "No project group yet",
+                    Description = "Create a group of up to six students if this proposal will be submitted by a group lead.",
+                    ActionLabel = "Create Project Group",
+                    ActionUrl = Url.Action("MyGroup", "Student")
+                };
+                <partial name="_EmptyState" model="groupEmptyState" />
+            }
+            else
+            {
+                <div class="metric-value fs-4">@Model.ProjectGroupName</div>
+                <div class="subtle-text mt-2">Members: @Model.ProjectGroupMemberCount</div>
+                <div class="subtle-text">Role: @(Model.IsProjectGroupLead ? "Group Lead" : "Group Member")</div>
+                <div class="mt-3">
+                    <a asp-action="MyGroup" class="btn btn-outline-primary">Manage Group</a>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="surface-card h-100">
+            <div class="section-header">
+                <div>
+                    <h2 class="h4">Recent Proposal Activity</h2>
+                    <p class="subtle-text">Each proposal keeps its own blind-match timeline until supervisor identity is revealed.</p>
+                </div>
+            </div>
+
+            @if (!Model.RecentProposals.Any())
+            {
+                var emptyState = new BlindMatchPAS.ViewModels.EmptyStateViewModel
+                {
+                    Title = "No proposals yet",
+                    Description = "Start with a single research idea, technical stack, and research area to enter the blind-matching pipeline.",
+                    ActionLabel = "Submit your first proposal",
+                    ActionUrl = Url.Action("Create", "Student")
+                };
+                <partial name="_EmptyState" model="emptyState" />
+            }
+            else
+            {
+                <div class="row g-4">
+                    @foreach (var proposal in Model.RecentProposals)
+                    {
+                        <div class="col-lg-6">
+                            <div class="surface-card h-100">
+                                <div class="section-header mb-3">
+                                    <div>
+                                        <h3 class="h5 mb-1">@proposal.Title</h3>
+                                        <div class="subtle-text">@proposal.ResearchAreaName</div>
+                                        <div class="subtle-text">@proposal.OwnershipLabel</div>
+                                    </div>
+                                    <partial name="_StatusBadge" model="proposal.Status" />
+                                </div>
+
+                                <partial name="_ProposalTimeline" model="new BlindMatchPAS.ViewModels.ProposalTimelineViewModel { Status = proposal.Status, CreatedAt = proposal.CreatedAt, UpdatedAt = proposal.UpdatedAt, MatchedAt = proposal.MatchedAt, IsIdentityRevealed = proposal.IsIdentityRevealed }" />
+
+                                <div class="mt-3">
+                                    @if (proposal.IsIdentityRevealed && !string.IsNullOrWhiteSpace(proposal.SupervisorFullName))
+                                    {
+                                        <div class="subtle-text mb-1">Supervisor revealed</div>
+                                        <div><strong>@proposal.SupervisorFullName</strong></div>
+                                        <div>@proposal.SupervisorEmail</div>
+                                    }
+                                    else
+                                    {
+                                        <div class="subtle-text">Supervisor identity stays hidden until match confirmation.</div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="surface-card">
+    <div class="section-header">
+        <div>
+            <h2 class="h4">Workflow Reminder</h2>
+            <p class="subtle-text">Anonymous review stays active until a supervisor confirms the match and the reveal is triggered automatically.</p>
+        </div>
+    </div>
+    <div class="info-chip-row">
+        <span class="info-chip">Individual and group-led submissions are both supported.</span>
+        <span class="info-chip">Only a group lead can manage group-owned proposals.</span>
+        <span class="info-chip">Supervisor details reveal automatically after confirmation.</span>
+    </div>
+</section>

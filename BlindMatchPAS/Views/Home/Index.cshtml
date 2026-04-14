@@ -1,8 +1,100 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@model BlindMatchPAS.ViewModels.HomeDashboardViewModel
+@{
+    ViewData["Title"] = "Blind-Match Project Approval System";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<section class="hero-panel p-4 p-lg-5 mb-4">
+    <div class="row align-items-center g-4">
+        <div class="col-lg-7">
+            <span class="badge text-bg-light border mb-3">Fair allocation through blind matching</span>
+            <h1 class="display-5 fw-semibold mb-3">Blind-Match PAS keeps project selection focused on technical merit.</h1>
+            <p class="lead text-muted mb-4">
+                Students submit proposals by research area, supervisors review them anonymously, and identities are revealed
+                only after a match is confirmed.
+            </p>
+            <div class="d-flex flex-wrap gap-2">
+                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary btn-lg">Login</a>
+                <a asp-controller="Home" asp-action="Privacy" class="btn btn-outline-secondary btn-lg">Security & Privacy</a>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Workflow Highlights</h2>
+                    <ul class="mb-0">
+                        <li>Students can create, edit, track, and withdraw proposals before matching.</li>
+                        <li>Supervisors review title, abstract, and tech stack without seeing student identity.</li>
+                        <li>The system reveals student and supervisor details only after confirmation.</li>
+                        <li>Coordinator-managed accounts keep student and supervisor onboarding under module leadership control.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="row g-3 mb-4">
+    <div class="col-md-4 col-lg-2">
+        <div class="metric-card">
+            <div class="metric-value">@Model.ResearchAreaCount</div>
+            <div class="metric-label">Research Areas</div>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-2">
+        <div class="metric-card">
+            <div class="metric-value">@Model.ProposalCount</div>
+            <div class="metric-label">Proposals</div>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-2">
+        <div class="metric-card">
+            <div class="metric-value">@Model.PendingProposalCount</div>
+            <div class="metric-label">Pending</div>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-2">
+        <div class="metric-card">
+            <div class="metric-value">@Model.UnderReviewProposalCount</div>
+            <div class="metric-label">Under Review</div>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-2">
+        <div class="metric-card">
+            <div class="metric-value">@Model.MatchCount</div>
+            <div class="metric-label">Matches</div>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-2">
+        <div class="metric-card">
+            <div class="metric-value">@Model.SupervisorCount</div>
+            <div class="metric-label">Supervisors</div>
+        </div>
+    </div>
+</section>
+
+<section class="row g-4">
+    <div class="col-lg-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <h2 class="h5">Student Journey</h2>
+                <p class="text-muted">Submit a proposal with title, abstract, technical stack, and research area. Track its status through pending, under review, and matched states.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <h2 class="h5">Supervisor Journey</h2>
+                <p class="text-muted">Set expertise tags, browse anonymous proposals, and confirm supervision only when the project aligns with your academic strengths.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <h2 class="h5">Coordinator Oversight</h2>
+                <p class="text-muted">Manage research areas, provision user accounts, review all allocations, and intervene safely when a reassignment is necessary.</p>
+            </div>
+        </div>
+    </div>
+</section>

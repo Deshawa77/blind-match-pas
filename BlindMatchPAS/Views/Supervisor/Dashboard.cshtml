@@ -1,0 +1,144 @@
+@model BlindMatchPAS.ViewModels.SupervisorDashboardViewModel
+
+@{
+    ViewData["Title"] = "Supervisor Dashboard";
+}
+
+<section class="page-panel mb-4">
+    <div class="section-header">
+        <div>
+            <div class="section-eyebrow">Supervisor Workspace</div>
+            <h1 class="h2 mt-2">Blind Review Dashboard</h1>
+            <p class="subtle-text mt-2">Review anonymous proposals that align with your expertise, manage your active interest queue, and stay inside your supervision capacity.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-action="BrowseProjects" class="btn btn-primary">Browse Projects</a>
+            <a asp-action="SetExpertise" class="btn btn-outline-primary">Update Expertise</a>
+        </div>
+    </div>
+
+    <div class="info-chip-row mb-4">
+        <span class="info-chip">Matching Window: @(Model.IsMatchingWindowOpen ? "Open" : "Closed")</span>
+        @if (Model.MatchingOpensAtUtc.HasValue)
+        {
+            <span class="info-chip">Opens @Model.MatchingOpensAtUtc.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span>
+        }
+        @if (Model.MatchingClosesAtUtc.HasValue)
+        {
+            <span class="info-chip">Closes @Model.MatchingClosesAtUtc.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span>
+        }
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="metric-card metric-card-accent">
+            <div class="metric-value">@Model.AvailableProjectCount</div>
+            <div class="metric-label">Blind Review Opportunities</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">@Model.ExpertiseCount</div>
+            <div class="metric-label">Expertise Areas</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">@Model.ConfirmedMatchCount</div>
+            <div class="metric-label">Confirmed Supervisions</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">@Model.CapacityLimit</div>
+            <div class="metric-label">Capacity Limit</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">@Model.RemainingCapacity</div>
+            <div class="metric-label">Remaining Capacity</div>
+        </div>
+    </div>
+</section>
+
+<section class="row g-4">
+    <div class="col-lg-5">
+        <div class="surface-card h-100">
+            <div class="section-header">
+                <div>
+                    <h2 class="h4">Expertise Profile</h2>
+                    <p class="subtle-text">Your blind-review queue is automatically narrowed by these tags when they are configured.</p>
+                </div>
+            </div>
+
+            @if (!Model.ExpertiseAreas.Any())
+            {
+                var expertiseEmptyState = new BlindMatchPAS.ViewModels.EmptyStateViewModel
+                {
+                    Title = "No expertise selected",
+                    Description = "Choose research areas to get a better-matched proposal queue and cleaner allocation decisions.",
+                    ActionLabel = "Set Expertise",
+                    ActionUrl = Url.Action("SetExpertise", "Supervisor")
+                };
+                <partial name="_EmptyState" model="expertiseEmptyState" />
+            }
+            else
+            {
+                <div class="info-chip-row">
+                    @foreach (var area in Model.ExpertiseAreas)
+                    {
+                        <span class="info-chip">@area</span>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="surface-card h-100">
+            <div class="section-header">
+                <div>
+                    <h2 class="h4">Pending Interests</h2>
+                    <p class="subtle-text">Only unmatched projects stay confirmable. Confirming a match reveals identity instantly.</p>
+                </div>
+                <a asp-action="MyInterests" class="btn btn-outline-primary">Open Interest Queue</a>
+            </div>
+
+            @if (!Model.PendingInterests.Any())
+            {
+                var interestEmptyState = new BlindMatchPAS.ViewModels.EmptyStateViewModel
+                {
+                    Title = "No confirmable interests yet",
+                    Description = "Express interest from the blind-review queue to start building your shortlist.",
+                    ActionLabel = "Browse Projects",
+                    ActionUrl = Url.Action("BrowseProjects", "Supervisor")
+                };
+                <partial name="_EmptyState" model="interestEmptyState" />
+            }
+            else
+            {
+                <div class="table-shell">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Project</th>
+                                <th>Area</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var interest in Model.PendingInterests)
+                            {
+                                <tr>
+                                    <td>@interest.ProjectTitle</td>
+                                    <td>@interest.ResearchAreaName</td>
+                                    <td><partial name="_StatusBadge" model="interest.Status" /></td>
+                                    <td>
+                                        <form asp-action="ConfirmMatch" asp-route-id="@interest.InterestId" method="post">
+                                            <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Confirm this match and reveal identities?');">
+                                                Confirm Match
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</section>

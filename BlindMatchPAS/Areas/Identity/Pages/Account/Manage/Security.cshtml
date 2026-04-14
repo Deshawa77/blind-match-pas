@@ -1,0 +1,68 @@
+@page
+@model BlindMatchPAS.Areas.Identity.Pages.Account.Manage.SecurityModel
+@{
+    ViewData["Title"] = "Security Center";
+}
+
+<div class="row g-4 py-3">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body p-4">
+                <h1 class="h3 mb-3">@ViewData["Title"]</h1>
+                <p class="text-muted">Manage your secure account options including email confirmation, password recovery readiness, and optional authenticator-based two-factor authentication.</p>
+
+                @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+                {
+                    <div class="alert alert-success">@Model.StatusMessage</div>
+                }
+
+                <div class="dashboard-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">Email Status</div>
+                        <div class="metric-value fs-4">@(Model.IsEmailConfirmed ? "Confirmed" : "Pending")</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Two-Factor</div>
+                        <div class="metric-value fs-4">@(Model.IsTwoFactorEnabled ? "Enabled" : "Optional")</div>
+                    </div>
+                </div>
+
+                <hr />
+
+                <h2 class="h5">Email confirmation</h2>
+                <p class="text-muted">Confirmed email addresses unlock trusted recovery links and can be required by coordinators before login.</p>
+
+                @if (Model.IsEmailConfirmed)
+                {
+                    <span class="status-badge status-matched">Email confirmed</span>
+                }
+                else
+                {
+                    <form method="post" asp-page-handler="SendConfirmation">
+                        <button type="submit" class="btn btn-outline-primary">Resend confirmation email</button>
+                    </form>
+                }
+
+                <hr />
+
+                <h2 class="h5">Authenticator app</h2>
+                <p class="text-muted">Use an authenticator app to add a second sign-in factor on top of your password.</p>
+
+                @if (!Model.AllowOptionalTwoFactor)
+                {
+                    <div class="alert alert-info mb-0">Two-factor authentication is currently disabled by system settings.</div>
+                }
+                else if (!Model.IsTwoFactorEnabled)
+                {
+                    <a asp-page="./EnableAuthenticator" class="btn btn-primary">Enable Authenticator</a>
+                }
+                else
+                {
+                    <form method="post" asp-page-handler="DisableTwoFactor">
+                        <button type="submit" class="btn btn-outline-danger">Disable Two-Factor</button>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+</div>

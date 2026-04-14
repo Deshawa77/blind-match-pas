@@ -17,10 +17,6 @@ namespace BlindMatchPAS.ViewModels
         public string UserName { get; set; } = string.Empty;
 
         [Required]
-        [Display(Name = "Role Type")]
-        public string RoleType { get; set; } = string.Empty;
-
-        [Required]
         [Display(Name = "System Role")]
         public string SelectedRole { get; set; } = string.Empty;
 
@@ -33,5 +29,9 @@ namespace BlindMatchPAS.ViewModels
         [Compare("Password")]
         [Display(Name = "Confirm Password")]
         public string ConfirmPassword { get; set; } = string.Empty;
+
+        [Range(1, 20)]
+        [Display(Name = "Supervisor Capacity Override")]
+        public int? SupervisorCapacity { get; set; }
     }
 }

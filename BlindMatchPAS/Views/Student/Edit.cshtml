@@ -4,40 +4,60 @@
     ViewData["Title"] = "Edit Proposal";
 }
 
-<h2>Edit Project Proposal</h2>
-
-<form asp-action="Edit" method="post">
-    <input type="hidden" asp-for="Id" />
-
-    <div class="mb-3">
-        <label asp-for="Title" class="form-label"></label>
-        <input asp-for="Title" class="form-control" />
-        <span asp-validation-for="Title" class="text-danger"></span>
+<section class="page-panel">
+    <div class="section-header">
+        <div>
+            <div class="section-eyebrow">Proposal Submission</div>
+            <h1 class="h2 mt-2">Edit Project Proposal</h1>
+            <p class="subtle-text mt-2">Update your proposal before it is matched. Once a match is confirmed or the proposal is withdrawn, editing is locked.</p>
+        </div>
     </div>
 
-    <div class="mb-3">
-        <label asp-for="Abstract" class="form-label"></label>
-        <textarea asp-for="Abstract" class="form-control" rows="6"></textarea>
-        <span asp-validation-for="Abstract" class="text-danger"></span>
-    </div>
+    <form asp-action="Edit" method="post" class="surface-card">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="OwnershipType" />
+        <input type="hidden" asp-for="ProjectGroupId" />
 
-    <div class="mb-3">
-        <label asp-for="TechnicalStack" class="form-label"></label>
-        <input asp-for="TechnicalStack" class="form-control" />
-        <span asp-validation-for="TechnicalStack" class="text-danger"></span>
-    </div>
+        <div class="surface-card bg-light-subtle mb-4">
+            <div class="form-text text-uppercase mb-1">Submission Ownership</div>
+            <div class="fw-semibold">@(Model.OwnershipType == "Group" ? Model.SelectedGroupName ?? "Project Group" : "Individual submission")</div>
+            <div class="subtle-text">Ownership is locked after submission to preserve the blind-match audit trail.</div>
+        </div>
 
-    <div class="mb-3">
-        <label asp-for="ResearchAreaId" class="form-label"></label>
-        <select asp-for="ResearchAreaId" asp-items="ViewBag.ResearchAreas" class="form-select">
-            <option value="">-- Select Research Area --</option>
-        </select>
-        <span asp-validation-for="ResearchAreaId" class="text-danger"></span>
-    </div>
+        <div class="mb-3">
+            <label asp-for="Title" class="form-label"></label>
+            <input asp-for="Title" class="form-control" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
 
-    <button type="submit" class="btn btn-success">Save Changes</button>
-    <a asp-action="MyProposals" class="btn btn-secondary">Back</a>
-</form>
+        <div class="mb-3">
+            <label asp-for="Abstract" class="form-label"></label>
+            <textarea asp-for="Abstract" class="form-control" rows="6"></textarea>
+            <span asp-validation-for="Abstract" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="TechnicalStack" class="form-label"></label>
+            <input asp-for="TechnicalStack" class="form-control" />
+            <span asp-validation-for="TechnicalStack" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="ResearchAreaId" class="form-label"></label>
+            <select asp-for="ResearchAreaId" asp-items="ViewBag.ResearchAreas" class="form-select">
+                <option value="">-- Select Research Area --</option>
+            </select>
+            <span asp-validation-for="ResearchAreaId" class="text-danger"></span>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mt-4">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a asp-action="MyGroup" class="btn btn-outline-primary">Open Group Workspace</a>
+            <a asp-action="MyProposals" class="btn btn-outline-secondary">Back</a>
+        </div>
+    </form>
+</section>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

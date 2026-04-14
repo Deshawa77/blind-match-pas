@@ -1,0 +1,34 @@
+@{
+    var successMessage = TempData["SuccessMessage"] as string;
+    var errorMessage = TempData["ErrorMessage"] as string;
+    var infoMessage = TempData["InfoMessage"] as string;
+}
+
+@if (!string.IsNullOrWhiteSpace(successMessage) || !string.IsNullOrWhiteSpace(errorMessage) || !string.IsNullOrWhiteSpace(infoMessage))
+{
+    <div class="toast-stack" aria-live="polite" aria-atomic="true">
+        @if (!string.IsNullOrWhiteSpace(successMessage))
+        {
+            <div class="app-toast app-toast-success" data-toast>
+                <div class="app-toast-title">Success</div>
+                <div>@successMessage</div>
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(errorMessage))
+        {
+            <div class="app-toast app-toast-danger" data-toast>
+                <div class="app-toast-title">Action Needed</div>
+                <div>@errorMessage</div>
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(infoMessage))
+        {
+            <div class="app-toast app-toast-info" data-toast>
+                <div class="app-toast-title">Info</div>
+                <div>@infoMessage</div>
+            </div>
+        }
+    </div>
+}

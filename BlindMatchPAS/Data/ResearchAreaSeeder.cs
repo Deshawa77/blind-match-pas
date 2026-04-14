@@ -9,8 +9,6 @@ namespace BlindMatchPAS.Data
         {
             var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
 
-            await context.Database.MigrateAsync();
-
             if (await context.ResearchAreas.AnyAsync())
             {
                 return;

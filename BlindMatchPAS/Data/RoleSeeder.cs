@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+using BlindMatchPAS.Constants;
+using Microsoft.AspNetCore.Identity;
 
 namespace BlindMatchPAS.Data
 {
@@ -8,9 +9,7 @@ namespace BlindMatchPAS.Data
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-            string[] roles = { "Student", "Supervisor", "ModuleLeader", "Admin" };
-
-            foreach (var role in roles)
+            foreach (var role in ApplicationRoles.All)
             {
                 if (!await roleManager.RoleExistsAsync(role))
                 {

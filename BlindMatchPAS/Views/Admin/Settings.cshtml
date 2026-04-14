@@ -1,0 +1,71 @@
+@model BlindMatchPAS.ViewModels.SystemSettingsViewModel
+
+@{
+    ViewData["Title"] = "System Settings";
+}
+
+<section class="page-panel">
+    <div class="section-header">
+        <div>
+            <div class="section-eyebrow">System Controls</div>
+            <h1 class="h2 mt-2">Allocation Settings</h1>
+            <p class="subtle-text mt-2">Control submission windows, matching windows, capacity limits, and secure-account policies from one page.</p>
+        </div>
+    </div>
+
+    <form asp-action="Settings" method="post" class="surface-card">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="app-form-grid">
+            <div>
+                <label asp-for="ProposalSubmissionOpensAt" class="form-label"></label>
+                <input asp-for="ProposalSubmissionOpensAt" type="datetime-local" class="form-control" />
+                <span asp-validation-for="ProposalSubmissionOpensAt" class="text-danger"></span>
+            </div>
+            <div>
+                <label asp-for="ProposalSubmissionClosesAt" class="form-label"></label>
+                <input asp-for="ProposalSubmissionClosesAt" type="datetime-local" class="form-control" />
+                <span asp-validation-for="ProposalSubmissionClosesAt" class="text-danger"></span>
+            </div>
+            <div>
+                <label asp-for="MatchingOpensAt" class="form-label"></label>
+                <input asp-for="MatchingOpensAt" type="datetime-local" class="form-control" />
+                <span asp-validation-for="MatchingOpensAt" class="text-danger"></span>
+            </div>
+            <div>
+                <label asp-for="MatchingClosesAt" class="form-label"></label>
+                <input asp-for="MatchingClosesAt" type="datetime-local" class="form-control" />
+                <span asp-validation-for="MatchingClosesAt" class="text-danger"></span>
+            </div>
+            <div>
+                <label asp-for="DefaultSupervisorCapacity" class="form-label"></label>
+                <input asp-for="DefaultSupervisorCapacity" class="form-control" />
+                <span asp-validation-for="DefaultSupervisorCapacity" class="text-danger"></span>
+            </div>
+            <div class="grid-span-2">
+                <div class="form-check mb-2">
+                    <input asp-for="EmailNotificationsEnabled" class="form-check-input" />
+                    <label asp-for="EmailNotificationsEnabled" class="form-check-label"></label>
+                </div>
+                <div class="form-check mb-2">
+                    <input asp-for="RequireConfirmedAccountToSignIn" class="form-check-input" />
+                    <label asp-for="RequireConfirmedAccountToSignIn" class="form-check-label"></label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" checked disabled />
+                    <label class="form-check-label">Public self-registration is disabled</label>
+                    <div class="form-text">Student and supervisor accounts are created by the module leader or administrator.</div>
+                </div>
+                <div class="form-check">
+                    <input asp-for="AllowOptionalTwoFactor" class="form-check-input" />
+                    <label asp-for="AllowOptionalTwoFactor" class="form-check-label"></label>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mt-4">
+            <button type="submit" class="btn btn-primary">Save Settings</button>
+            <a asp-action="Dashboard" class="btn btn-outline-secondary">Back to Dashboard</a>
+        </div>
+    </form>
+</section>

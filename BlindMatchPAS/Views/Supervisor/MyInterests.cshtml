@@ -1,57 +1,79 @@
-﻿@model IEnumerable<BlindMatchPAS.Models.SupervisorInterest>
+@model IEnumerable<BlindMatchPAS.ViewModels.SupervisorInterestSummaryViewModel>
 
 @{
     ViewData["Title"] = "My Interests";
 }
 
-<h2>My Expressed Interests</h2>
+<section class="page-panel mb-4">
+    <div class="section-header">
+        <div>
+            <div class="section-eyebrow">Interest Queue</div>
+            <h1 class="h2 mt-2">My Expressed Interests</h1>
+            <p class="subtle-text mt-2">Confirm matches only when you are satisfied with topic fit and still have supervision capacity available.</p>
+        </div>
+    </div>
+</section>
 
-@if (TempData["SuccessMessage"] != null)
+@if (!Model.Any())
 {
-    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    var emptyState = new BlindMatchPAS.ViewModels.EmptyStateViewModel
+    {
+        Title = "No interests recorded",
+        Description = "Browse anonymous proposals and express interest to begin the blind-matching conversation.",
+        ActionLabel = "Browse Projects",
+        ActionUrl = Url.Action("BrowseProjects", "Supervisor")
+    };
+    <partial name="_EmptyState" model="emptyState" />
 }
-
-@if (TempData["ErrorMessage"] != null)
+else
 {
-    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    <div class="table-shell">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Project</th>
+                    <th>Research Area</th>
+                    <th>Status</th>
+                    <th>Expressed At</th>
+                    <th>Confirmed</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var interest in Model)
+                {
+                    <tr>
+                        <td>@interest.ProjectTitle</td>
+                        <td>@interest.ResearchAreaName</td>
+                        <td><partial name="_StatusBadge" model="interest.Status" /></td>
+                        <td>@interest.ExpressedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>
+                            @if (interest.IsConfirmed)
+                            {
+                                <span class="status-badge status-matched">Confirmed</span>
+                            }
+                            else
+                            {
+                                <span class="status-badge status-neutral">Pending</span>
+                            }
+                        </td>
+                        <td>
+                            @if (interest.CanConfirm)
+                            {
+                                <form asp-action="ConfirmMatch" asp-route-id="@interest.InterestId" method="post">
+                                    <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Confirm this match and reveal identities?');">
+                                        Confirm Match
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <span class="subtle-text">No action available</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }
-
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>Project Title</th>
-            <th>Research Area</th>
-            <th>Status</th>
-            <th>Expressed At</th>
-            <th>Confirmed</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var interest in Model)
-        {
-            <tr>
-                <td>@interest.ProjectProposal?.Title</td>
-                <td>@interest.ProjectProposal?.ResearchArea?.Name</td>
-                <td>@interest.ProjectProposal?.Status</td>
-                <td>@interest.ExpressedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
-                <td>@(interest.IsConfirmed ? "Yes" : "No")</td>
-                <td>
-                    @if (!(interest.ProjectProposal?.IsMatched ?? false) && interest.ProjectProposal?.Status != "Withdrawn")
-                    {
-                        <form asp-action="ConfirmMatch" asp-route-id="@interest.Id" method="post" style="display:inline;">
-                            <button type="submit" class="btn btn-sm btn-primary"
-                                    onclick="return confirm('Confirm this match and reveal identities?');">
-                                Confirm Match
-                            </button>
-                        </form>
-                    }
-                    else
-                    {
-                        <span class="text-muted">No action available</span>
-                    }
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>

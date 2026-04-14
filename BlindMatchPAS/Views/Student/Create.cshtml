@@ -4,38 +4,82 @@
     ViewData["Title"] = "Submit Proposal";
 }
 
-<h2>Submit Project Proposal</h2>
-
-<form asp-action="Create" method="post">
-    <div class="mb-3">
-        <label asp-for="Title" class="form-label"></label>
-        <input asp-for="Title" class="form-control" />
-        <span asp-validation-for="Title" class="text-danger"></span>
+<section class="page-panel">
+    <div class="section-header">
+        <div>
+            <div class="section-eyebrow">Proposal Submission</div>
+            <h1 class="h2 mt-2">Submit Project Proposal</h1>
+            <p class="subtle-text mt-2">Provide a technically focused proposal. Supervisors will review these details without seeing your identity until a match is confirmed.</p>
+        </div>
     </div>
 
-    <div class="mb-3">
-        <label asp-for="Abstract" class="form-label"></label>
-        <textarea asp-for="Abstract" class="form-control" rows="6"></textarea>
-        <span asp-validation-for="Abstract" class="text-danger"></span>
-    </div>
+    <form asp-action="Create" method="post" class="surface-card">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-    <div class="mb-3">
-        <label asp-for="TechnicalStack" class="form-label"></label>
-        <input asp-for="TechnicalStack" class="form-control" />
-        <span asp-validation-for="TechnicalStack" class="text-danger"></span>
-    </div>
+        @if (!Model.CanSubmitAsGroup)
+        {
+            <input type="hidden" asp-for="OwnershipType" />
+        }
+        else
+        {
+            <div class="mb-4">
+                <label asp-for="OwnershipType" class="form-label"></label>
+                <div class="surface-card bg-light-subtle">
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" asp-for="OwnershipType" value="Individual" />
+                        <label class="form-check-label" for="OwnershipType">Individual submission</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" asp-for="OwnershipType" value="Group" />
+                        <label class="form-check-label" for="OwnershipType">Project group submission</label>
+                    </div>
+                    <span asp-validation-for="OwnershipType" class="text-danger d-block mt-2"></span>
+                </div>
+            </div>
 
-    <div class="mb-3">
-        <label asp-for="ResearchAreaId" class="form-label"></label>
-        <select asp-for="ResearchAreaId" asp-items="ViewBag.ResearchAreas" class="form-select">
-            <option value="">-- Select Research Area --</option>
-        </select>
-        <span asp-validation-for="ResearchAreaId" class="text-danger"></span>
-    </div>
+            <div class="mb-3">
+                <label asp-for="ProjectGroupId" class="form-label"></label>
+                <select asp-for="ProjectGroupId" asp-items="ViewBag.LedGroups" class="form-select">
+                    <option value="">-- Select your led project group --</option>
+                </select>
+                <div class="form-text">Only available when you are submitting as a group lead.</div>
+                <span asp-validation-for="ProjectGroupId" class="text-danger"></span>
+            </div>
+        }
 
-    <button type="submit" class="btn btn-primary">Submit Proposal</button>
-    <a asp-action="MyProposals" class="btn btn-secondary">Back</a>
-</form>
+        <div class="mb-3">
+            <label asp-for="Title" class="form-label"></label>
+            <input asp-for="Title" class="form-control" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Abstract" class="form-label"></label>
+            <textarea asp-for="Abstract" class="form-control" rows="6"></textarea>
+            <span asp-validation-for="Abstract" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="TechnicalStack" class="form-label"></label>
+            <input asp-for="TechnicalStack" class="form-control" />
+            <span asp-validation-for="TechnicalStack" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="ResearchAreaId" class="form-label"></label>
+            <select asp-for="ResearchAreaId" asp-items="ViewBag.ResearchAreas" class="form-select">
+                <option value="">-- Select Research Area --</option>
+            </select>
+            <span asp-validation-for="ResearchAreaId" class="text-danger"></span>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mt-4">
+            <button type="submit" class="btn btn-primary">Submit Proposal</button>
+            <a asp-action="MyGroup" class="btn btn-outline-primary">Manage Project Group</a>
+            <a asp-action="MyProposals" class="btn btn-outline-secondary">Back</a>
+        </div>
+    </form>
+</section>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

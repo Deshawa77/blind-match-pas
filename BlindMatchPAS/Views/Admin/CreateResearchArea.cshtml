@@ -4,24 +4,35 @@
     ViewData["Title"] = "Create Research Area";
 }
 
-<h2>Create Research Area</h2>
-
-<form asp-action="CreateResearchArea" method="post">
-    <div class="mb-3">
-        <label asp-for="Name" class="form-label"></label>
-        <input asp-for="Name" class="form-control" />
-        <span asp-validation-for="Name" class="text-danger"></span>
+<section class="page-panel">
+    <div class="section-header">
+        <div>
+            <div class="section-eyebrow">Academic Taxonomy</div>
+            <h1 class="h2 mt-2">Create Research Area</h1>
+            <p class="subtle-text mt-2">Research areas drive student categorization and supervisor expertise matching, so each name should be clear and unique.</p>
+        </div>
     </div>
 
-    <div class="mb-3">
-        <label asp-for="Description" class="form-label"></label>
-        <textarea asp-for="Description" class="form-control" rows="4"></textarea>
-        <span asp-validation-for="Description" class="text-danger"></span>
-    </div>
+    <form asp-action="CreateResearchArea" method="post" class="surface-card">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        <div class="mb-3">
+            <label asp-for="Name" class="form-label"></label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
 
-    <button type="submit" class="btn btn-primary">Create</button>
-    <a asp-action="ResearchAreas" class="btn btn-secondary">Back</a>
-</form>
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label"></label>
+            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mt-4">
+            <button type="submit" class="btn btn-primary">Create</button>
+            <a asp-action="ResearchAreas" class="btn btn-outline-secondary">Back</a>
+        </div>
+    </form>
+</section>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

@@ -1,6 +1,9 @@
 ﻿using BlindMatchPAS.Data;
 using BlindMatchPAS.Models;
 using BlindMatchPAS.ViewModels;
+using BlindMatchPAS.Constants;
+using BlindMatchPAS.Interfaces;
+using BlindMatchPAS.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -9,16 +12,82 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BlindMatchPAS.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = ApplicationRoles.Supervisor)]
     public class SupervisorController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IMatchService _matchService;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ISystemSettingsService _settingsService;
+        private readonly IAuditService _auditService;
 
-        public SupervisorController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public SupervisorController(
+            ApplicationDbContext context,
+            IMatchService matchService,
+            UserManager<ApplicationUser> userManager,
+            ISystemSettingsService settingsService,
+            IAuditService auditService)
         {
             _context = context;
+            _matchService = matchService;
             _userManager = userManager;
+            _settingsService = settingsService;
+            _auditService = auditService;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Dashboard()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Challenge();
+            }
+
+            var expertiseAreas = await _context.SupervisorExpertise
+                .Where(expertise => expertise.SupervisorId == user.Id)
+                .Include(expertise => expertise.ResearchArea)
+                .OrderBy(expertise => expertise.ResearchArea!.Name)
+                .Select(expertise => expertise.ResearchArea != null ? expertise.ResearchArea.Name : "Unassigned")
+                .ToListAsync();
+
+            var availableProjectsQuery = _context.ProjectProposals
+                .Where(projectProposal => projectProposal.Status != ProposalStatuses.Withdrawn
+                    && projectProposal.Status != ProposalStatuses.Matched
+                    && !projectProposal.IsMatched);
+
+            var expertiseIds = await _context.SupervisorExpertise
+                .Where(expertise => expertise.SupervisorId == user.Id)
+                .Select(expertise => expertise.ResearchAreaId)
+                .ToListAsync();
+
+            if (expertiseIds.Any())
+            {
+                availableProjectsQuery = availableProjectsQuery
+                    .Where(projectProposal => expertiseIds.Contains(projectProposal.ResearchAreaId));
+            }
+
+            var pendingInterests = await GetInterestSummariesAsync(user.Id);
+            var settings = await _settingsService.GetSettingsAsync();
+            var confirmedMatchCount = await _context.MatchRecords.CountAsync(matchRecord => matchRecord.SupervisorId == user.Id);
+            var capacityLimit = await _settingsService.GetSupervisorCapacityAsync(user);
+
+            var model = new SupervisorDashboardViewModel
+            {
+                SupervisorName = user.FullName,
+                IsMatchingWindowOpen = await _settingsService.IsMatchingOpenAsync(DateTime.UtcNow),
+                MatchingOpensAtUtc = settings.MatchingOpensAtUtc,
+                MatchingClosesAtUtc = settings.MatchingClosesAtUtc,
+                ExpertiseCount = expertiseAreas.Count,
+                AvailableProjectCount = await availableProjectsQuery.CountAsync(),
+                ConfirmedMatchCount = confirmedMatchCount,
+                CapacityLimit = capacityLimit,
+                RemainingCapacity = Math.Max(capacityLimit - confirmedMatchCount, 0),
+                ExpertiseAreas = expertiseAreas,
+                PendingInterests = pendingInterests.Where(interest => interest.CanConfirm).Take(5).ToList()
+            };
+
+            return View(model);
         }
 
         [HttpGet]
@@ -57,15 +126,20 @@ namespace BlindMatchPAS.Controllers
                 return Challenge();
             }
 
+            var sanitizedResearchAreaIds = await _context.ResearchAreas
+                .Where(researchArea => model.SelectedResearchAreaIds.Contains(researchArea.Id))
+                .Select(researchArea => researchArea.Id)
+                .ToListAsync();
+
             var existing = await _context.SupervisorExpertise
                 .Where(se => se.SupervisorId == user.Id)
                 .ToListAsync();
 
             _context.SupervisorExpertise.RemoveRange(existing);
 
-            if (model.SelectedResearchAreaIds.Any())
+            if (sanitizedResearchAreaIds.Any())
             {
-                var newItems = model.SelectedResearchAreaIds.Select(id => new SupervisorExpertise
+                var newItems = sanitizedResearchAreaIds.Select(id => new SupervisorExpertise
                 {
                     SupervisorId = user.Id,
                     ResearchAreaId = id
@@ -76,12 +150,24 @@ namespace BlindMatchPAS.Controllers
 
             await _context.SaveChangesAsync();
 
+            await _auditService.LogAsync(
+                "SupervisorExpertiseUpdated",
+                nameof(SupervisorExpertise),
+                user.Id,
+                $"Supervisor '{user.FullName}' updated expertise preferences.",
+                user.Id,
+                user.FullName,
+                metadata: new
+                {
+                    ResearchAreaIds = sanitizedResearchAreaIds
+                });
+
             TempData["SuccessMessage"] = "Expertise preferences updated successfully.";
             return RedirectToAction(nameof(BrowseProjects));
         }
 
         [HttpGet]
-        public async Task<IActionResult> BrowseProjects(int? researchAreaId)
+        public async Task<IActionResult> BrowseProjects(int? researchAreaId, string? searchTerm)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
@@ -89,26 +175,55 @@ namespace BlindMatchPAS.Controllers
                 return Challenge();
             }
 
+            var settings = await _settingsService.GetSettingsAsync();
             var expertiseIds = await _context.SupervisorExpertise
                 .Where(se => se.SupervisorId == user.Id)
                 .Select(se => se.ResearchAreaId)
                 .ToListAsync();
 
             var query = _context.ProjectProposals
-                .Include(p => p.ResearchArea)
-                .Where(p => p.Status != "Withdrawn" && p.Status != "Matched" && !p.IsMatched);
+                .Include(projectProposal => projectProposal.ResearchArea)
+                .Where(projectProposal => projectProposal.Status != ProposalStatuses.Withdrawn
+                    && projectProposal.Status != ProposalStatuses.Matched
+                    && !projectProposal.IsMatched);
 
             if (researchAreaId.HasValue)
             {
-                query = query.Where(p => p.ResearchAreaId == researchAreaId.Value);
+                query = query.Where(projectProposal => projectProposal.ResearchAreaId == researchAreaId.Value);
             }
             else if (expertiseIds.Any())
             {
-                query = query.Where(p => expertiseIds.Contains(p.ResearchAreaId));
+                query = query.Where(projectProposal => expertiseIds.Contains(projectProposal.ResearchAreaId));
             }
 
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var normalizedSearchTerm = searchTerm.Trim();
+
+                query = query.Where(projectProposal =>
+                    projectProposal.Title.Contains(normalizedSearchTerm)
+                    || projectProposal.Abstract.Contains(normalizedSearchTerm)
+                    || projectProposal.TechnicalStack.Contains(normalizedSearchTerm));
+            }
+
+            var interestedProjectIds = await _context.SupervisorInterests
+                .Where(interest => interest.SupervisorId == user.Id)
+                .Select(interest => interest.ProjectProposalId)
+                .ToListAsync();
+
             var proposals = await query
-                .OrderByDescending(p => p.CreatedAt)
+                .OrderByDescending(projectProposal => projectProposal.CreatedAt)
+                .Select(projectProposal => new SupervisorProjectCardViewModel
+                {
+                    Id = projectProposal.Id,
+                    Title = projectProposal.Title,
+                    Abstract = projectProposal.Abstract,
+                    TechnicalStack = projectProposal.TechnicalStack,
+                    ResearchAreaName = projectProposal.ResearchArea != null ? projectProposal.ResearchArea.Name : "Unassigned",
+                    Status = projectProposal.Status,
+                    CreatedAt = projectProposal.CreatedAt,
+                    AlreadyInterested = interestedProjectIds.Contains(projectProposal.Id)
+                })
                 .ToListAsync();
 
             ViewBag.ResearchAreas = new SelectList(
@@ -118,7 +233,22 @@ namespace BlindMatchPAS.Controllers
                 researchAreaId
             );
 
-            return View(proposals);
+            return View(new SupervisorBrowseProjectsViewModel
+            {
+                ResearchAreaId = researchAreaId,
+                SearchTerm = searchTerm?.Trim() ?? string.Empty,
+                HasConfiguredExpertise = expertiseIds.Any(),
+                IsMatchingWindowOpen = await _settingsService.IsMatchingOpenAsync(DateTime.UtcNow),
+                MatchingOpensAtUtc = settings.MatchingOpensAtUtc,
+                MatchingClosesAtUtc = settings.MatchingClosesAtUtc,
+                CapacityLimit = await _settingsService.GetSupervisorCapacityAsync(user),
+                ConfirmedMatchCount = await _context.MatchRecords.CountAsync(matchRecord => matchRecord.SupervisorId == user.Id),
+                RemainingCapacity = Math.Max(
+                    await _settingsService.GetSupervisorCapacityAsync(user)
+                        - await _context.MatchRecords.CountAsync(matchRecord => matchRecord.SupervisorId == user.Id),
+                    0),
+                Projects = proposals
+            });
         }
 
         [HttpPost]
@@ -131,47 +261,14 @@ namespace BlindMatchPAS.Controllers
                 return Challenge();
             }
 
-            var proposal = await _context.ProjectProposals
-                .FirstOrDefaultAsync(p => p.Id == id);
+            var result = await _matchService.ExpressInterestAsync(id, user.Id);
 
-            if (proposal == null)
+            if (result.Status == MatchOperationStatus.NotFound)
             {
                 return NotFound();
             }
 
-            if (proposal.Status == "Withdrawn" || proposal.Status == "Matched" || proposal.IsMatched)
-            {
-                TempData["ErrorMessage"] = "This project is no longer available.";
-                return RedirectToAction(nameof(BrowseProjects));
-            }
-
-            var alreadyInterested = await _context.SupervisorInterests
-                .AnyAsync(si => si.ProjectProposalId == id && si.SupervisorId == user.Id);
-
-            if (alreadyInterested)
-            {
-                TempData["ErrorMessage"] = "You have already expressed interest in this project.";
-                return RedirectToAction(nameof(BrowseProjects));
-            }
-
-            var interest = new SupervisorInterest
-            {
-                ProjectProposalId = proposal.Id,
-                SupervisorId = user.Id,
-                ExpressedAt = DateTime.UtcNow,
-                IsConfirmed = false
-            };
-
-            _context.SupervisorInterests.Add(interest);
-
-            if (proposal.Status == "Pending")
-            {
-                proposal.Status = "UnderReview";
-            }
-
-            await _context.SaveChangesAsync();
-
-            TempData["SuccessMessage"] = "Interest expressed successfully.";
+            TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] = result.Message;
             return RedirectToAction(nameof(BrowseProjects));
         }
 
@@ -184,12 +281,7 @@ namespace BlindMatchPAS.Controllers
                 return Challenge();
             }
 
-            var interests = await _context.SupervisorInterests
-                .Include(si => si.ProjectProposal)
-                    .ThenInclude(p => p.ResearchArea)
-                .Where(si => si.SupervisorId == user.Id)
-                .OrderByDescending(si => si.ExpressedAt)
-                .ToListAsync();
+            var interests = await GetInterestSummariesAsync(user.Id);
 
             return View(interests);
         }
@@ -204,65 +296,21 @@ namespace BlindMatchPAS.Controllers
                 return Challenge();
             }
 
-            var interest = await _context.SupervisorInterests
-                .Include(si => si.ProjectProposal)
-                .FirstOrDefaultAsync(si => si.Id == id && si.SupervisorId == user.Id);
+            var result = await _matchService.ConfirmMatchAsync(id, user.Id);
 
-            if (interest == null)
+            if (result.Status == MatchOperationStatus.NotFound)
             {
                 return NotFound();
             }
 
-            var proposal = interest.ProjectProposal;
+            TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] = result.Message;
 
-            if (proposal == null)
+            if (!result.Succeeded || result.ProposalId == null)
             {
-                return NotFound();
-            }
-
-            if (proposal.Status == "Matched" || proposal.IsMatched)
-            {
-                TempData["ErrorMessage"] = "This project has already been matched.";
                 return RedirectToAction(nameof(MyInterests));
             }
 
-            if (proposal.Status == "Withdrawn")
-            {
-                TempData["ErrorMessage"] = "This project has been withdrawn.";
-                return RedirectToAction(nameof(MyInterests));
-            }
-
-            var existingMatch = await _context.MatchRecords
-                .AnyAsync(m => m.ProjectProposalId == proposal.Id);
-
-            if (existingMatch)
-            {
-                TempData["ErrorMessage"] = "A match record already exists for this project.";
-                return RedirectToAction(nameof(MyInterests));
-            }
-
-            interest.IsConfirmed = true;
-
-            proposal.Status = "Matched";
-            proposal.IsMatched = true;
-            proposal.IsIdentityRevealed = true;
-            proposal.UpdatedAt = DateTime.UtcNow;
-
-            var matchRecord = new MatchRecord
-            {
-                ProjectProposalId = proposal.Id,
-                StudentId = proposal.StudentId,
-                SupervisorId = user.Id,
-                MatchedAt = DateTime.UtcNow,
-                IdentityRevealed = true
-            };
-
-            _context.MatchRecords.Add(matchRecord);
-
-            await _context.SaveChangesAsync();
-
-            TempData["SuccessMessage"] = "Match confirmed successfully. Identity has been revealed.";
-            return RedirectToAction(nameof(RevealedMatch), new { proposalId = proposal.Id });
+            return RedirectToAction(nameof(RevealedMatch), new { proposalId = result.ProposalId.Value });
         }
 
         [HttpGet]
@@ -275,8 +323,12 @@ namespace BlindMatchPAS.Controllers
             }
 
             var match = await _context.MatchRecords
-                .Include(m => m.ProjectProposal)
+                .Include(m => m.ProjectProposal!)
                     .ThenInclude(p => p.ResearchArea)
+                .Include(m => m.ProjectProposal!)
+                    .ThenInclude(p => p.ProjectGroup)
+                        .ThenInclude(projectGroup => projectGroup!.Members)
+                            .ThenInclude(projectGroupMember => projectGroupMember.Student)
                 .Include(m => m.Student)
                 .Include(m => m.Supervisor)
                 .FirstOrDefaultAsync(m => m.ProjectProposalId == proposalId && m.SupervisorId == user.Id);
@@ -287,6 +339,31 @@ namespace BlindMatchPAS.Controllers
             }
 
             return View(match);
+        }
+
+        private Task<List<SupervisorInterestSummaryViewModel>> GetInterestSummariesAsync(string supervisorId)
+        {
+            return _context.SupervisorInterests
+                .Include(interest => interest.ProjectProposal!)
+                    .ThenInclude(projectProposal => projectProposal.ResearchArea)
+                .Where(interest => interest.SupervisorId == supervisorId)
+                .OrderByDescending(interest => interest.ExpressedAt)
+                .Select(interest => new SupervisorInterestSummaryViewModel
+                {
+                    InterestId = interest.Id,
+                    ProposalId = interest.ProjectProposalId,
+                    ProjectTitle = interest.ProjectProposal != null ? interest.ProjectProposal.Title : "Unavailable",
+                    ResearchAreaName = interest.ProjectProposal != null && interest.ProjectProposal.ResearchArea != null
+                        ? interest.ProjectProposal.ResearchArea.Name
+                        : "Unassigned",
+                    Status = interest.ProjectProposal != null ? interest.ProjectProposal.Status : ProposalStatuses.Pending,
+                    ExpressedAt = interest.ExpressedAt,
+                    IsConfirmed = interest.IsConfirmed,
+                    CanConfirm = interest.ProjectProposal != null
+                        && !interest.ProjectProposal.IsMatched
+                        && interest.ProjectProposal.Status != ProposalStatuses.Withdrawn
+                })
+                .ToListAsync();
         }
     }
 }

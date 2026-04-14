@@ -1,0 +1,29 @@
+@model string
+@{
+    var normalized = (Model ?? string.Empty).Replace(" ", string.Empty, StringComparison.OrdinalIgnoreCase);
+    var label = normalized switch
+    {
+        "UnderReview" => "Under Review",
+        "ModuleLeader" => "Module Leader",
+        "RequireConfirmedAccountToSignIn" => "Confirmed Email Required",
+        _ => Model
+    };
+
+    var cssClass = normalized switch
+    {
+        "Pending" => "status-pending",
+        "UnderReview" => "status-review",
+        "Matched" => "status-matched",
+        "Withdrawn" => "status-withdrawn",
+        "Sent" => "status-matched",
+        "Logged" => "status-review",
+        "Failed" => "status-withdrawn",
+        "Supervisor" => "status-review",
+        "Admin" => "status-matched",
+        "ModuleLeader" => "status-matched",
+        "Student" => "status-neutral",
+        _ => "status-neutral"
+    };
+}
+
+<span class="status-badge @cssClass">@label</span>

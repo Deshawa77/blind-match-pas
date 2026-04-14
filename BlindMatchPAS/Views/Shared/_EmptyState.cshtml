@@ -1,0 +1,11 @@
+@model BlindMatchPAS.ViewModels.EmptyStateViewModel
+
+<div class="empty-state">
+    <div class="empty-state-icon">BM</div>
+    <h3>@Model.Title</h3>
+    <p>@Model.Description</p>
+    @if (!string.IsNullOrWhiteSpace(Model.ActionLabel) && !string.IsNullOrWhiteSpace(Model.ActionUrl))
+    {
+        <a href="@Model.ActionUrl" class="btn btn-primary">@Model.ActionLabel</a>
+    }
+</div>
