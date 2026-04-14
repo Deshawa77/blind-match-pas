@@ -19,6 +19,10 @@ Release/
 
 ## Logs
 *.log
+artifacts/
+TestResults/
+*.trx
+coverage.cobertura.xml
 
 ## Rider / VS Code optional
 .idea/
